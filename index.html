@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>لوحة المهام والتحديثات</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel-2:#1c232c; --line:#2a323d;
+    --text:#e6edf3; --muted:#8b949e; --accent:#4f9dff; --accent-2:#2f6fd0;
+    --green:#3fb950; --amber:#d29922; --red:#f85149; --violet:#a371f7;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",Arial,sans-serif;
+    font-size:15px; line-height:1.7;
+  }
+  a{color:var(--accent)}
+  button,input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
+  button{cursor:pointer}
+
+  /* ===== Header ===== */
+  header{
+    position:sticky; top:0; z-index:50; backdrop-filter:blur(8px);
+    background:rgba(14,17,22,.85); border-bottom:1px solid var(--line);
+  }
+  .head-wrap{max-width:100%;margin:0 auto;padding:14px 18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px}
+  .brand .dot{width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+  .stats{color:var(--muted);font-size:13px}
+  .spacer{flex:1}
+  .btn{
+    background:var(--panel-2); border:1px solid var(--line); color:var(--text);
+    padding:8px 14px; border-radius:10px; transition:.15s; white-space:nowrap;
+  }
+  .btn:hover{border-color:var(--accent);background:#222b36}
+  .btn.primary{background:var(--accent-2);border-color:var(--accent-2)}
+  .btn.primary:hover{background:var(--accent)}
+  .btn.ghost{background:transparent}
+  .btn.sm{padding:4px 10px;font-size:13px;border-radius:8px}
+  .btn.danger:hover{border-color:var(--red);color:var(--red)}
+
+  /* ===== Toolbar ===== */
+  .toolbar{padding:16px 18px 4px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .search{flex:1;min-width:220px;position:relative}
+  .search input{
+    width:100%;padding:10px 38px 10px 12px;background:var(--panel);
+    border:1px solid var(--line);border-radius:10px;outline:none;
+  }
+  .search input:focus{border-color:var(--accent)}
+  .search::before{content:"🔍";position:absolute;right:12px;top:9px;opacity:.6}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap}
+  .tab{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-size:13px;cursor:pointer}
+  .tab.active{background:var(--accent-2);border-color:var(--accent-2);font-weight:600}
+
+  /* ===== Canvas (free drag area) ===== */
+  .canvas{
+    position:relative; min-height:calc(100vh - 140px); padding:16px;
+    overflow:auto; scroll-behavior:smooth;
+  }
+  .grid-mode .canvas{ display:flex; flex-wrap:nowrap; gap:16px; overflow-x:auto; overflow-y:hidden; align-items:flex-start; padding-bottom:20px; }
+  .grid-mode .card{ min-width:340px; max-width:370px; flex-shrink:0; }
+
+  /* ===== Card ===== */
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    display:flex;flex-direction:column;overflow:hidden;transition:box-shadow .15s;
+    width:370px; min-height:180px;
+  }
+  .grid-mode .card{ position:static !important; width:auto; }
+  .free-mode .card{ position:absolute; z-index:1; }
+  .free-mode .card.dragging{ z-index:999; box-shadow:0 12px 40px rgba(0,0,0,.5); cursor:grabbing; }
+  .card:hover{border-color:#3a4553}
+  .card.stale{box-shadow:inset 4px 0 0 0 var(--amber)}
+  .card.done{opacity:.62}
+
+  /* ===== تايمر التحديث ===== */
+  .stale-timer{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;
+  }
+  .stale-timer.green{color:var(--green);border:1px solid #27502e;background:#0f2417}
+  .stale-timer.amber{color:var(--amber);border:1px solid #5c4a1d;background:#2a2210}
+  .stale-timer.red{color:var(--red);border:1px solid #5e2b28;background:#2a1414;animation:pulse-red 2s infinite}
+
+  .card-head{padding:14px 16px 10px;border-bottom:1px solid var(--line);cursor:grab}
+  .card-head:active{cursor:grabbing}
+  .row{display:flex;align-items:flex-start;gap:8px}
+  .title{font-weight:700;font-size:16.5px;flex:1;word-break:break-word}
+  .card.done .title{text-decoration:line-through}
+  .desc{color:var(--muted);font-size:13.5px;margin-top:6px;white-space:pre-wrap;word-break:break-word}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center}
+  .badge{font-size:11.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+  .badge.s-new{color:var(--accent);border-color:#2b4d7a;background:#132132}
+  .badge.s-doing{color:var(--violet);border-color:#4b3a72;background:#1d1730}
+  .badge.s-wait{color:var(--amber);border-color:#5c4a1d;background:#2a2210}
+  .badge.s-done{color:var(--green);border-color:#27502e;background:#0f2417}
+  .badge.p-high{color:var(--red);border-color:#5e2b28;background:#2a1414}
+  .badge.today{color:var(--green);border-color:#27502e;background:#0f2417}
+
+  /* ===== Color stripe ===== */
+  .card[data-color]{ border-top:4px solid transparent; }
+
+  .updates{padding:8px 16px 4px;flex:1;max-height:340px;overflow:auto}
+  .empty-u{color:var(--muted);font-size:13px;padding:10px 0}
+  .u{
+    position:relative;padding:8px 16px 8px 4px;border-right:2px solid var(--line);
+    margin-right:5px;
+  }
+  .u::before{
+    content:"";position:absolute;right:-6px;top:14px;width:9px;height:9px;border-radius:50%;
+    background:var(--line);border:2px solid var(--panel);
+  }
+  .u.is-today::before{background:var(--green)}
+  .u-meta{font-size:11.5px;color:var(--muted);display:flex;gap:8px;align-items:center}
+  .u-text{white-space:pre-wrap;word-break:break-word;font-size:14px;margin-top:2px}
+
+  /* === آخر تحديث بارز === */
+  .u.is-latest{
+    background:rgba(79,157,255,.07); border-radius:10px; padding:12px 16px 12px 8px;
+    border-right:3px solid var(--accent); margin-bottom:6px;
+  }
+  .u.is-latest .u-text{
+    font-size:17px; font-weight:700; color:#fff; line-height:1.6;
+  }
+  .u.is-latest::before{ background:var(--accent); width:11px; height:11px; }
+
+  .u .del{visibility:hidden;background:none;border:none;color:var(--muted);padding:0 4px;font-size:12px}
+  .u:hover .del{visibility:visible}
+  .u .del:hover{color:var(--red)}
+  .more{background:none;border:none;color:var(--accent);font-size:13px;padding:6px 4px}
+
+  .card-foot{padding:10px 16px 14px;border-top:1px solid var(--line);background:var(--panel-2)}
+  .card-foot textarea{
+    width:100%;min-height:44px;max-height:160px;resize:vertical;padding:9px 11px;
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;outline:none;
+  }
+  .card-foot textarea:focus{border-color:var(--accent)}
+  .foot-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+  .hint{color:var(--muted);font-size:11.5px}
+
+  .empty{
+    text-align:center;padding:70px 20px;color:var(--muted);
+    border:1px dashed var(--line);border-radius:var(--radius);
+  }
+
+  /* ===== Color picker row ===== */
+  .color-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .color-dot{
+    width:28px;height:28px;border-radius:50%;border:3px solid transparent;cursor:pointer;
+    transition:.15s;
+  }
+  .color-dot:hover{transform:scale(1.15)}
+  .color-dot.active{border-color:#fff;box-shadow:0 0 8px rgba(255,255,255,.3)}
+  .color-dot[data-c="none"]{background:var(--panel);border:2px dashed var(--line)}
+
+  /* ===== Modal ===== */
+  .overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;
+    align-items:center;justify-content:center;padding:20px;z-index:100;
+  }
+  .overlay.open{display:flex}
+  .modal{
+    background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    width:100%;max-width:560px;max-height:88vh;overflow:auto;padding:22px;
+  }
+  .modal h3{margin:0 0 16px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  .field input,.field textarea,.field select{
+    width:100%;padding:10px 12px;background:var(--panel-2);
+    border:1px solid var(--line);border-radius:10px;outline:none;
+  }
+  .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
+  .field textarea{min-height:80px;resize:vertical}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-start;margin-top:18px}
+  .note{font-size:12.5px;color:var(--muted);background:var(--panel-2);border:1px solid var(--line);
+        border-radius:10px;padding:10px 12px;margin-top:6px}
+  #aiOut{
+    white-space:pre-wrap;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:10px;padding:14px;margin-top:12px;min-height:60px;max-height:45vh;overflow:auto;font-size:14px;
+  }
+  .toast{
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--panel-2);border:1px solid var(--line);padding:10px 18px;border-radius:10px;
+    opacity:0;transition:.25s;z-index:200;pointer-events:none;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  /* ===== Deadline timer ===== */
+  .deadline-timer{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;
+  }
+  .deadline-timer.dl-ok{color:var(--green);border:1px solid #27502e;background:#0f2417}
+  .deadline-timer.dl-soon{color:var(--amber);border:1px solid #5c4a1d;background:#2a2210}
+  .deadline-timer.dl-urgent{color:var(--red);border:1px solid #5e2b28;background:#2a1414;animation:pulse-red 2s infinite}
+  .deadline-timer.dl-over{color:#ff6b6b;border:1px solid #5e2b28;background:#3a1414;animation:pulse-red 1.5s infinite}
+
+  /* ===== أرشيف ===== */
+  .archive-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    min-width:300px;max-width:340px;flex-shrink:0;padding:16px;opacity:.7;transition:.15s;
+  }
+  .archive-card:hover{opacity:1;border-color:#3a4553}
+  .archive-card .title{font-weight:700;font-size:15px;text-decoration:line-through;color:var(--muted)}
+  .archive-card .a-meta{font-size:12px;color:var(--muted);margin-top:8px}
+  .archive-card .a-last{font-size:13px;margin-top:6px;color:var(--text);opacity:.8}
+  @keyframes pulse-red{0%,100%{opacity:1}50%{opacity:.55}}
+  @media(max-width:600px){ .grid-mode .canvas{grid-template-columns:1fr} .two{grid-template-columns:1fr} .card{width:100%} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-wrap">
+    <div class="brand"><span class="dot"></span> لوحة المهام <span id="syncIcon" title="متصل بالسحابة" style="font-size:13px;opacity:.6">☁️</span></div>
+    <div class="stats" id="stats"></div>
+    <div class="spacer"></div>
+    <button class="btn sm" id="btnMode" title="تبديل العرض">📌 عرض حر</button>
+    <button class="btn primary" id="btnNew">+ مهمة جديدة</button>
+    <button class="btn" id="btnAI">✨ تحليل بالذكاء الاصطناعي</button>
+    <button class="btn ghost" id="btnExport" title="حفظ نسخة احتياطية">تصدير</button>
+    <button class="btn ghost" id="btnImport" title="استرجاع نسخة">استيراد</button>
+    <input type="file" id="fileIn" accept=".json" hidden>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="search"><input id="q" placeholder="ابحث في العناوين والتحديثات..."></div>
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-f="all">الكل</button>
+    <button class="tab" data-f="new">جديدة</button>
+    <button class="tab" data-f="doing">قيد التنفيذ</button>
+    <button class="tab" data-f="wait">معلّقة</button>
+    <button class="tab" data-f="stale">تحتاج تحديث</button>
+  </div>
+  <select id="filterAssignee" style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;color:var(--text);font-size:13px;cursor:pointer">
+    <option value="">كل المسؤولين</option>
+  </select>
+</div>
+
+<main id="main" class="free-mode"><div class="canvas" id="grid"></div></main>
+
+<!-- أرشيف المهام المكتملة -->
+<section id="archiveSection" style="display:none;padding:0 18px 30px">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;cursor:pointer" id="archiveToggle">
+    <h3 style="margin:0;font-size:17px;color:var(--muted)">📦 الأرشيف <span id="archiveCount" style="font-size:14px"></span></h3>
+    <span id="archiveArrow" style="color:var(--muted);font-size:13px">▼</span>
+  </div>
+  <div id="archiveGrid" style="display:none;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding-bottom:14px"></div>
+</section>
+
+<!-- مودال المهمة -->
+<div class="overlay" id="taskModal">
+  <div class="modal">
+    <h3 id="taskModalTitle">مهمة جديدة</h3>
+    <input type="hidden" id="tId">
+    <div class="field"><label>عنوان المهمة</label><input id="tTitle" placeholder="مثال: تجهيز تقرير الربع الثالث"></div>
+    <div class="field"><label>وصف مختصر (اختياري)</label><textarea id="tDesc" placeholder="تفاصيل، هدف المهمة، رابط..."></textarea></div>
+    <div class="two">
+      <div class="field"><label>الحالة</label>
+        <select id="tStatus">
+          <option value="new">جديدة</option>
+          <option value="doing">قيد التنفيذ</option>
+          <option value="wait">معلّقة</option>
+          <option value="done">مكتملة</option>
+        </select>
+      </div>
+      <div class="field"><label>الأولوية</label>
+        <select id="tPriority">
+          <option value="normal">عادية</option>
+          <option value="high">عالية</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>الموعد النهائي (اختياري)</label>
+      <input id="tDeadline" type="date" style="background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--text);width:100%"></div>
+    <div class="field"><label>المسؤول</label>
+      <div style="display:flex;gap:8px">
+        <select id="tAssignee" style="flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--text)">
+          <option value="">بدون مسؤول</option>
+        </select>
+        <button class="btn sm" id="btnAddPerson" type="button" title="إضافة مسؤول جديد">+ شخص</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>لون البطاقة</label>
+      <div class="color-row" id="colorRow">
+        <div class="color-dot active" data-c="none" title="بدون"></div>
+        <div class="color-dot" data-c="#4f9dff" style="background:#4f9dff" title="أزرق"></div>
+        <div class="color-dot" data-c="#a371f7" style="background:#a371f7" title="بنفسجي"></div>
+        <div class="color-dot" data-c="#3fb950" style="background:#3fb950" title="أخضر"></div>
+        <div class="color-dot" data-c="#d29922" style="background:#d29922" title="ذهبي"></div>
+        <div class="color-dot" data-c="#f85149" style="background:#f85149" title="أحمر"></div>
+        <div class="color-dot" data-c="#f778ba" style="background:#f778ba" title="وردي"></div>
+        <div class="color-dot" data-c="#39d2c0" style="background:#39d2c0" title="تركواز"></div>
+        <div class="color-dot" data-c="#ff8c42" style="background:#ff8c42" title="برتقالي"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn primary" id="tSave">حفظ</button>
+      <button class="btn ghost" data-close>إلغاء</button>
+      <div class="spacer"></div>
+      <button class="btn danger" id="tDelete" style="display:none">حذف المهمة</button>
+    </div>
+  </div>
+</div>
+
+<!-- مودال الذكاء الاصطناعي -->
+<div class="overlay" id="aiModal">
+  <div class="modal" style="max-width:680px">
+    <h3>✨ تحليل المهام بالذكاء الاصطناعي</h3>
+    <div class="field"><label>المزوّد</label>
+      <div class="tabs" id="providerTabs" style="margin-bottom:4px">
+        <button class="tab active" data-prov="claude">Claude (Anthropic)</button>
+        <button class="tab" data-prov="openai">OpenAI</button>
+        <button class="tab" data-prov="custom">مزوّد آخر</button>
+      </div>
+    </div>
+    <div class="two">
+      <div class="field" id="fBase" style="display:none"><label>عنوان الـ API</label>
+        <input id="aiBase" placeholder="https://api.openai.com/v1"></div>
+      <div class="field"><label>النموذج</label>
+        <input id="aiModel" placeholder="claude-haiku-4-5"></div>
+    </div>
+    <div class="field"><label>مفتاح الـ API</label>
+      <input id="aiKey" type="password" placeholder="sk-ant-..." autocomplete="off"></div>
+    <div class="field"><label>اطلب ما تريد</label>
+      <textarea id="aiPrompt">حلّل بيانات المهام وأعطني التقرير التالي بالضبط:
+
+📊 ملخص سريع
+سطر واحد فيه: عدد قيد التنفيذ · عدد جديدة · عدد مكتملة · عدد المهام اللي ما تم تحديثها من أكثر من يوم
+مثال: 6 قيد التنفيذ · 10 جديدة · 0 مكتملة · 5 لم يتم التحديث
+
+📋 أولويات اليوم
+رتّب جميع المهام الغير مكتملة بالأهمية. معايير الترتيب:
+- المهام اللي ما تحدثت من فترة أطول = أهمية أعلى
+- المهام العالقة أو المعتمدة على طرف خارجي = أهمية أعلى
+- المهام قيد التنفيذ قبل الجديدة
+
+لكل مهمة اكتبها بهذا الشكل:
+رقم. ⭐⭐⭐ اسم المهمة — سبب مختصر | ⏰ آخر تحديث: قبل X يوم
+(النجوم من 1 إلى 5 حسب الأهمية والإلحاح)
+
+🔄 مهام متشابهة أو مكررة
+راجع المهام وإذا فيه مهام متشابهة في الهدف أو الجهة أو الموضوع، اذكرها مع بعض واقترح هل تُدمج أو تُنسّق مع بعض. إذا ما فيه تشابه اكتب "لا توجد مهام متشابهة".
+
+💡 مقترح ذكي
+اكتب مقترح استراتيجي واحد يخدم مدير المشروع — مثل: دمج اجتماعات، تفويض، تصعيد، إعادة ترتيب أولويات، أو حل ذكي يوفر وقت ويسرّع الإنجاز. اشرحه بـ 3 أسطر كحد أقصى.</textarea></div>
+    <div class="modal-actions">
+      <button class="btn primary" id="aiRun">أرسل وحلّل</button>
+      <button class="btn ghost" data-close>إغلاق</button>
+      <span class="hint" id="aiStatus"></span>
+    </div>
+    <div id="aiOut"></div>
+    <button class="btn sm" id="aiCopy" style="display:none;margin-top:8px">📋 نسخ الملخص</button>
+    <div class="note">
+      المفتاح يُحفظ في متصفحك فقط (localStorage) ويُرسل مباشرة للـ API.<br>
+      <strong>Claude:</strong> يستخدم <code>anthropic.com/v1/messages</code> مباشرة.<br>
+      <strong>OpenAI:</strong> يجرّب <code>/responses</code> ثم <code>/chat/completions</code>.
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ===== Firebase ===== */
+let db, tasksRef, peopleRef, configRef, firebaseReady = false, useFirebase = false;
+try {
+  if(typeof firebase !== "undefined"){
+    firebase.initializeApp({
+      apiKey: "AIzaSyD1tcC2glbAh-5arxzGxNWB7BHra2Ulmi8",
+      authDomain: "task-board-d3f90.firebaseapp.com",
+      databaseURL: "https://task-board-d3f90-default-rtdb.firebaseio.com",
+      projectId: "task-board-d3f90",
+      storageBucket: "task-board-d3f90.firebasestorage.app",
+      messagingSenderId: "455852977918",
+      appId: "1:455852977918:web:e4446311a1443f6b9abfaf"
+    });
+    db = firebase.database();
+    db.goOnline(); // تأكيد الاتصال
+    tasksRef = db.ref("tasks");
+    peopleRef = db.ref("people");
+    configRef = db.ref("config");
+    useFirebase = true;
+    // تفعيل الحفظ المحلي لـ Firebase (يشتغل بدون إنترنت)
+    try{ firebase.database().ref().keepSynced && db.ref("tasks").keepSynced(true); }catch(e){}
+  }
+} catch(e){ console.warn("Firebase init failed:", e); }
+
+const KEY = "taskBoard.v1";
+const CFG = "taskBoard.cfg";
+const MODE_KEY = "taskBoard.mode";
+const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36);
+let tasks = load();
+let filter = "all", query = "", filterAssignee = "";
+const expanded = new Set();
+let freeMode = localStorage.getItem(MODE_KEY) !== "grid";
+
+const PEOPLE_KEY = "taskBoard.people";
+const DEFAULT_PEOPLE = [
+  "عبدالرحمن القرعاوي","محمد الزهراني ابوثاير","عبدالرحمن العلكمي ابو ريما",
+  "عبدالله العبدالقادر","طيبة عشيري","دار الرياض","سمو","الهيئة الملكية"
+];
+function loadPeople(){ try{ const r=localStorage.getItem(PEOPLE_KEY); return r?JSON.parse(r):DEFAULT_PEOPLE; }catch(e){return DEFAULT_PEOPLE;} }
+function savePeople(){ localStorage.setItem(PEOPLE_KEY, JSON.stringify(people)); savePeopleFirebase(); }
+let people = loadPeople();
+
+function populateAssigneeSelects(){
+  const sorted=[...people].sort((a,b)=>a.localeCompare(b,"ar"));
+  [$("#tAssignee"),$("#filterAssignee")].forEach(sel=>{
+    const val=sel.value;
+    const first=sel.options[0].textContent;
+    sel.innerHTML=`<option value="">${first}</option>`+sorted.map(p=>`<option value="${p}">${p}</option>`).join("");
+    sel.value=val;
+  });
+}
+
+function load(){
+  try{ const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : seed(); }
+  catch(e){ return seed(); }
+}
+let _saveTimer;
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(tasks)); }
+  catch(e){ toast("⚠️ تعذّر الحفظ محلياً — صدّر نسخة احتياطية"); }
+  // debounce Firebase writes (منع الكتابة المتكررة أثناء السحب)
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(()=>{
+    if(!useFirebase) return;
+    const map = {};
+    tasks.forEach(t=>{ if(t&&t.id) map[t.id]=t; });
+    tasksRef.set(map).catch(err=>{
+      console.warn("Firebase write failed:", err);
+      toast("⚠️ تعذّرت المزامنة — بياناتك محفوظة محلياً");
+    });
+  }, 300);
+}
+function saveOneTask(t){
+  save(); // localStorage + debounced Firebase
+}
+function savePeopleFirebase(){
+  if(!useFirebase) return;
+  peopleRef.set(people).catch(err=>{
+    console.warn("Firebase people write failed:", err);
+  });
+}
+function saveConfigFirebase(){
+  if(!useFirebase) return;
+  const c=cfg();
+  configRef.set(c).catch(err=>{ console.warn("Firebase config write failed:", err); });
+}
+function seed(){
+  const ts = new Date(2026,7,17,11,6,0).getTime();
+  const ts2 = new Date(2026,7,17,11,5,0).getTime();
+  return [
+    {id:uid(),title:"الرد على ايميل تركي",desc:"",status:"doing",priority:"normal",color:"#4f9dff",created:ts,
+     updates:[{id:uid(),at:ts,text:"تم الرد ايميل تركي اليوم"}]},
+    {id:uid(),title:"اعتماد مواصفات الوحدة",desc:"",status:"doing",priority:"normal",color:"#a371f7",created:ts2,
+     updates:[{id:uid(),at:ts2,text:"تم تذكير دار الرياض"}]},
+    {id:uid(),title:"إعداد جدول زمني لسمو",desc:"",status:"doing",priority:"normal",color:"#3fb950",created:ts2,
+     updates:[{id:uid(),at:ts2,text:"تم تذكير دار الرياض وسمو اليوم"}]},
+    {id:uid(),title:"التواصل مع معاذ بخصوص المواضيع المطلوبة",desc:"",status:"doing",priority:"normal",color:"#d29922",created:ts2,
+     updates:[{id:uid(),at:ts2,text:"تم بانتظار تحديد مواعيد اجتماعات"}]},
+    {id:uid(),title:"التواصل مع العمودي بخصوص رخصة يسير",desc:"",status:"doing",priority:"normal",color:"#f85149",created:ts2,
+     updates:[{id:uid(),at:ts2,text:"يقول مااعرف ،، لازم تضيف انت"}]},
+    {id:uid(),title:"التواصل مع الهيئة الملكية عن آلية حفظ البيانات وأي برنامج للاستخدام",desc:"",status:"doing",priority:"normal",color:"#39d2c0",created:ts2,
+     updates:[{id:uid(),at:ts2,text:"تم طلب اجتماع مع معاذ ،، اطرحه وقت الاجتماع"}]},
+    {id:uid(),title:"التأكد هل يلزم خطاب تسليم أو نكتفي بالخطاب السابق",desc:"",status:"new",priority:"normal",color:"",created:ts2,updates:[]},
+    {id:uid(),title:"تحديد آلية حساب فلل ياسرف",desc:"",status:"new",priority:"normal",color:"",created:ts2,updates:[]},
+    {id:uid(),title:"نزول فريق دار الرياض",desc:"",status:"new",priority:"normal",color:"",created:ts2,updates:[]},
+    {id:uid(),title:"اتفاقية سمو لتخصيص مبنى",desc:"",status:"new",priority:"normal",color:"",created:ts2,updates:[]},
+    {id:uid(),title:"الاتصال على المالح وإبراهيم عمر",desc:"",status:"new",priority:"normal",color:"",created:ts2,updates:[]},
+    {id:uid(),title:"التواصل مع معاذ بخصوص الهيكل التنظيمي والاجتماعات",desc:"",status:"new",priority:"normal",color:"",created:ts2,updates:[]},
+    {id:uid(),title:"كتابة سياسات وإجراءات للأعمال",desc:"",status:"new",priority:"normal",color:"",created:ts2,updates:[]},
+    {id:uid(),title:"مطالبة سمو بخصوص مكتب القصيبي القانوني",desc:"",status:"new",priority:"normal",color:"",created:ts2,updates:[]},
+    {id:uid(),title:"تجميع الاستبيان",desc:"",status:"new",priority:"normal",color:"",created:ts2,updates:[]},
+    {id:uid(),title:"إعداد تقرير دار الرياض",desc:"",status:"new",priority:"normal",color:"",created:ts2,updates:[]},
+  ];
+}
+
+/* ================= أدوات ================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const DAY = 86400000;
+
+function isToday(ts){ const a=new Date(ts),b=new Date(); return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
+function fmt(ts){ const d=new Date(ts),p=n=>String(n).padStart(2,"0"); return `${d.getFullYear()}/${p(d.getMonth()+1)}/${p(d.getDate())} · ${p(d.getHours())}:${p(d.getMinutes())}`; }
+function rel(ts){
+  const m=Math.floor((Date.now()-ts)/60000);
+  if(m<1)return"الآن"; if(m<60)return`قبل ${m} دقيقة`;
+  const h=Math.floor(m/60); if(h<24)return`قبل ${h} ساعة`;
+  const d=Math.floor(h/24); if(d===1)return"أمس"; if(d<30)return`قبل ${d} يوم`;
+  return`قبل ${Math.floor(d/30)} شهر`;
+}
+function lastAt(t){ if(!t||!t.updates)return 0; return t.updates.length ? Math.max(...t.updates.map(u=>u.at)) : (t.created||0); }
+function isStale(t){ return t&&t.status!=="done"&&(Date.now()-lastAt(t))>2*DAY; }
+const STATUS={new:"جديدة",doing:"قيد التنفيذ",wait:"معلّقة",done:"مكتملة"};
+
+let toastT;
+function toast(msg){ const el=$("#toast"); el.textContent=msg; el.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove("show"),2200); }
+
+/* ================= وضع العرض ================= */
+function applyMode(){
+  const m = $("#main");
+  m.classList.toggle("free-mode", freeMode);
+  m.classList.toggle("grid-mode", !freeMode);
+  $("#btnMode").textContent = freeMode ? "▦ عرض شبكة" : "📌 عرض حر";
+  localStorage.setItem(MODE_KEY, freeMode ? "free" : "grid");
+}
+$("#btnMode").onclick = ()=>{ freeMode=!freeMode; applyMode(); render(); };
+applyMode();
+
+/* === أرشيف toggle === */
+let archiveOpen = false;
+$("#archiveToggle").onclick = ()=>{
+  archiveOpen = !archiveOpen;
+  $("#archiveGrid").style.display = archiveOpen ? "flex" : "none";
+  $("#archiveArrow").textContent = archiveOpen ? "▲" : "▼";
+};
+
+/* ================= Auto-layout for free mode ================= */
+function autoLayout(){
+  const cols = Math.max(1, Math.floor((window.innerWidth - 40) / 400));
+  const colW = 380, gap = 16, padX = 20, padY = 10;
+  let colHeights = new Array(cols).fill(0);
+  tasks.forEach(t=>{
+    if(t.x != null && t.y != null) return; // already positioned
+    const shortest = colHeights.indexOf(Math.min(...colHeights));
+    t.x = padX + shortest * (colW + gap);
+    t.y = padY + colHeights[shortest];
+    colHeights[shortest] += 260 + gap;
+  });
+}
+
+/* ================= العرض ================= */
+function visible(){
+  const q=query.trim().toLowerCase();
+  return tasks.filter(t=>t&&t.id).filter(t=>{
+    // المكتملة تروح للأرشيف إلا إذا المستخدم اختار فلتر "مكتملة"
+    if(t.status==="done"&&filter!=="done") return false;
+    if(filterAssignee && (t.assignee||"")!==filterAssignee) return false;
+    if(filter==="stale"){ if(!isStale(t))return false; }
+    else if(filter!=="all"&&filter!=="done"&&t.status!==filter)return false;
+    if(!q)return true;
+    return(t.title+" "+(t.desc||"")+" "+(t.updates||[]).map(u=>u.text).join(" ")).toLowerCase().includes(q);
+  }).sort((a,b)=>{
+    if((a.priority==="high")!==(b.priority==="high"))return a.priority==="high"?-1:1;
+    return lastAt(b)-lastAt(a);
+  });
+}
+
+function render(){
+  if(freeMode) autoLayout();
+  const list=visible(), g=$("#grid");
+  const open=tasks.filter(t=>t&&t.status!=="done").length;
+  const todayCount=tasks.reduce((n,t)=>n+(t&&t.updates?t.updates.filter(u=>isToday(u.at)).length:0),0);
+  $("#stats").textContent=`${tasks.length} مهمة · ${open} مفتوحة · ${todayCount} تحديث اليوم`;
+
+  if(!list.length){
+    g.innerHTML=`<div class="empty" style="grid-column:1/-1;position:static">لا توجد مهام مطابقة.<br><br>
+      <button class="btn primary" onclick="document.getElementById('btnNew').click()">أضف مهمة</button></div>`;
+    return;
+  }
+
+  g.innerHTML=list.map(t=>{
+    const ups=[...(t.updates||[])].sort((a,b)=>b.at-a.at);
+    const latestId = ups.length ? ups[0].id : null;
+    const showAll=expanded.has(t.id);
+    const shown=showAll?ups:ups.slice(0,3);
+    const hidden=ups.length-shown.length;
+    const safeColor = t.color && /^#[0-9a-fA-F]{3,8}$/.test(t.color) ? t.color : "";
+    const colorStyle = safeColor ? `border-top:4px solid ${safeColor};` : "";
+    const posStyle = freeMode && t.x!=null ? `left:${t.x}px;top:${t.y}px;` : "";
+
+    const upsHtml = ups.length ? shown.map(u=>{
+      const latest = u.id===latestId;
+      return `
+      <div class="u ${isToday(u.at)?"is-today":""} ${latest?"is-latest":""}">
+        <div class="u-meta">
+          <span>${fmt(u.at)}</span><span>·</span><span>${rel(u.at)}</span>
+          ${isToday(u.at)?'<span class="badge today">اليوم</span>':""}
+          ${latest?'<span class="badge" style="color:var(--accent);border-color:var(--accent)">الأخير</span>':""}
+          <button class="del" data-del-u="${t.id}|${u.id}" title="حذف التحديث">✕</button>
+        </div>
+        <div class="u-text">${esc(u.text)}</div>
+      </div>`;
+    }).join("")
+    : `<div class="empty-u">لا توجد تحديثات بعد — اكتب أول تحديث بالأسفل.</div>`;
+
+    return `
+    <div class="card ${t.status==="done"?"done":""} ${isStale(t)?"stale":""}" data-id="${t.id}" style="${colorStyle}${posStyle}">
+      <div class="card-head" data-drag="${t.id}">
+        <div class="row">
+          <div class="title">${t.num?'<span style="background:#30363d;color:#8b949e;border-radius:4px;padding:0 5px;margin-left:6px;font-size:.75em">#'+t.num+'</span>':''}${esc(t.title)}</div>
+          <button class="btn sm ghost" data-edit="${t.id}" title="تعديل">✎</button>
+        </div>
+        ${t.desc?`<div class="desc">${esc(t.desc)}</div>`:""}
+        <div class="badges">
+          <span class="badge s-${t.status}">${STATUS[t.status]}</span>
+          ${t.assignee?`<span class="badge" style="color:var(--accent);border-color:#2b4d7a;background:#132132">👤 ${esc(t.assignee)}</span>`:""}
+          ${t.priority==="high"?'<span class="badge p-high">أولوية عالية</span>':""}
+          <span class="badge">${(t.updates||[]).length} تحديث</span>
+          <span class="badge">آخر نشاط: ${rel(lastAt(t))}</span>
+          ${t.status!=="done"?(()=>{
+            const days=Math.floor((Date.now()-lastAt(t))/DAY);
+            if(days===0) return '<span class="stale-timer green">✅ محدّث اليوم</span>';
+            const cls=days>=3?"red":days>=1?"amber":"green";
+            const icon=days>=3?"🔴":days>=1?"🟡":"🟢";
+            return '<span class="stale-timer '+cls+'">'+icon+' '+days+' يوم بدون تحديث</span>';
+          })():""}
+          ${t.deadline&&t.status!=="done"?(()=>{
+            const now=new Date(); now.setHours(0,0,0,0);
+            const dl=new Date(t.deadline);
+            if(isNaN(dl.getTime())) return "";
+            dl.setHours(0,0,0,0);
+            const diff=Math.ceil((dl-now)/DAY);
+            if(diff<0) return '<span class="deadline-timer dl-over">⛔ فات الموعد بـ '+Math.abs(diff)+' يوم</span>';
+            if(diff===0) return '<span class="deadline-timer dl-urgent">🔥 اليوم آخر موعد!</span>';
+            if(diff<=3) return '<span class="deadline-timer dl-soon">⚠️ باقي '+diff+' يوم</span>';
+            return '<span class="deadline-timer dl-ok">📅 باقي '+diff+' يوم</span>';
+          })():""}
+        </div>
+      </div>
+      <div class="updates">
+        ${upsHtml}
+        ${hidden>0?`<button class="more" data-more="${t.id}">عرض ${hidden} تحديث أقدم ▾</button>`:""}
+        ${showAll&&ups.length>3?`<button class="more" data-more="${t.id}">طيّ ▴</button>`:""}
+      </div>
+      <div class="card-foot">
+        <textarea data-input="${t.id}" placeholder="اكتب تحديث اليوم..."></textarea>
+        <div class="foot-row">
+          <button class="btn primary sm" data-add="${t.id}">إضافة تحديث</button>
+          ${t.status!=="done"
+            ?`<button class="btn sm" data-done="${t.id}">تمّت</button>`
+            :`<button class="btn sm" data-reopen="${t.id}">إعادة فتح</button>`}
+          <span class="spacer"></span>
+          <span class="hint">Ctrl+Enter</span>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+
+  // update canvas height for free mode
+  if(freeMode){
+    let maxY=0;
+    list.forEach(t=>{ if(t.y!=null){ const bottom=(t.y||0)+300; if(bottom>maxY)maxY=bottom; }});
+    g.style.minHeight = Math.max(maxY+60, window.innerHeight-140)+"px";
+  } else {
+    g.style.minHeight = "";
+  }
+
+  // === أرشيف المكتملة ===
+  const done = tasks.filter(t=>t.status==="done");
+  const archSec = $("#archiveSection");
+  if(done.length && filter!=="done"){
+    archSec.style.display = "";
+    $("#archiveCount").textContent = `(${done.length})`;
+    const ag = $("#archiveGrid");
+    ag.innerHTML = done.sort((a,b)=>lastAt(b)-lastAt(a)).map(t=>{
+      const uArr = t.updates||[];
+      const lastUp = uArr.length ? [...uArr].sort((a,b)=>b.at-a.at)[0].text : "";
+      return `<div class="archive-card" data-id="${t.id}">
+        <div class="title">${t.num?'<span style="background:#30363d;color:#8b949e;border-radius:4px;padding:0 5px;margin-left:6px;font-size:.75em">#'+t.num+'</span>':''}${esc(t.title)}</div>
+        <div class="a-meta">✅ مكتملة · ${uArr.length} تحديث · اكتملت ${rel(lastAt(t))}</div>
+        ${lastUp?`<div class="a-last">📝 ${esc(lastUp.slice(0,80))}${lastUp.length>80?"…":""}</div>`:""}
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button class="btn sm" data-reopen="${t.id}">↩ إعادة فتح</button>
+          <button class="btn sm danger" data-edit="${t.id}">✎</button>
+        </div>
+      </div>`;
+    }).join("");
+  } else {
+    archSec.style.display = "none";
+  }
+}
+
+/* ================= السحب (Drag) ================= */
+let dragState = null;
+
+document.addEventListener("pointerdown", e=>{
+  if(!freeMode) return;
+  const head = e.target.closest("[data-drag]");
+  if(!head) return;
+  if(e.target.closest("button")) return; // don't drag from buttons
+  const card = head.closest(".card");
+  const tid = head.dataset.drag;
+  const t = tasks.find(x=>x.id===tid);
+  if(!t) return;
+  e.preventDefault();
+  card.classList.add("dragging");
+  card.setPointerCapture(e.pointerId);
+  dragState = { tid, startX:e.clientX, startY:e.clientY, origX:t.x||0, origY:t.y||0, card, moved:false };
+});
+
+document.addEventListener("pointermove", e=>{
+  if(!dragState) return;
+  const dx = e.clientX - dragState.startX;
+  const dy = e.clientY - dragState.startY;
+  if(Math.abs(dx)+Math.abs(dy) > 4) dragState.moved = true;
+  const nx = Math.max(0, dragState.origX + dx);
+  const ny = Math.max(0, dragState.origY + dy);
+  dragState.card.style.left = nx + "px";
+  dragState.card.style.top = ny + "px";
+});
+
+document.addEventListener("pointerup", e=>{
+  if(!dragState) return;
+  dragState.card.classList.remove("dragging");
+  if(dragState.moved){
+    const dx = e.clientX - dragState.startX;
+    const dy = e.clientY - dragState.startY;
+    const t = tasks.find(x=>x.id===dragState.tid);
+    if(t){
+      t.x = Math.max(0, dragState.origX + dx);
+      t.y = Math.max(0, dragState.origY + dy);
+      save();
+    }
+  }
+  dragState = null;
+});
+
+/* ================= التفاعل ================= */
+function addUpdate(id){
+  const box=document.querySelector(`[data-input="${id}"]`);
+  const text=box.value.trim();
+  if(!text){box.focus();return;}
+  const t=tasks.find(x=>x.id===id);
+  if(!t.updates)t.updates=[];
+  t.updates.push({id:uid(),at:Date.now(),text});
+  if(t.status==="new")t.status="doing";
+  save();render();toast("تم حفظ التحديث ✓");
+}
+
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  const d=b.dataset;
+  if(d.add)return addUpdate(d.add);
+  if(d.more){expanded.has(d.more)?expanded.delete(d.more):expanded.add(d.more);return render();}
+  if(d.edit)return openTask(d.edit);
+  if(d.done){tasks.find(t=>t.id===d.done).status="done";save();render();return toast("اكتملت المهمة ✓");}
+  if(d.reopen){tasks.find(t=>t.id===d.reopen).status="doing";save();render();return;}
+  if(d.delU){
+    const[tid,uidv]=d.delU.split("|");
+    if(!confirm("حذف هذا التحديث؟"))return;
+    const t=tasks.find(x=>x.id===tid);
+    t.updates=(t.updates||[]).filter(u=>u.id!==uidv);
+    save();render();return;
+  }
+  if(b.hasAttribute("data-close"))b.closest(".overlay").classList.remove("open");
+});
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){
+    const ta=e.target.closest("textarea[data-input]");
+    if(ta){e.preventDefault();addUpdate(ta.dataset.input);}
+  }
+  if(e.key==="Escape")document.querySelectorAll(".overlay.open").forEach(o=>o.classList.remove("open"));
+});
+
+$("#q").addEventListener("input",e=>{query=e.target.value;render();});
+$("#tabs").addEventListener("click",e=>{
+  const t=e.target.closest(".tab");if(!t)return;
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  t.classList.add("active");filter=t.dataset.f;render();
+});
+
+/* ===== مودال المهمة ===== */
+let selectedColor = "none";
+document.getElementById("colorRow").addEventListener("click",e=>{
+  const dot=e.target.closest(".color-dot"); if(!dot)return;
+  document.querySelectorAll(".color-dot").forEach(d=>d.classList.remove("active"));
+  dot.classList.add("active");
+  selectedColor = dot.dataset.c;
+});
+
+function openTask(id){
+  const t=id?tasks.find(x=>x.id===id):null;
+  $("#taskModalTitle").textContent=t?"تعديل المهمة":"مهمة جديدة";
+  $("#tId").value=t?t.id:"";
+  $("#tTitle").value=t?t.title:"";
+  $("#tDesc").value=t?(t.desc||""):"";
+  $("#tStatus").value=t?t.status:"new";
+  $("#tPriority").value=t?t.priority:"normal";
+  $("#tDeadline").value=t&&t.deadline?t.deadline:"";
+  populateAssigneeSelects();
+  $("#tAssignee").value=t&&t.assignee?t.assignee:"";
+  $("#tDelete").style.display=t?"":"none";
+  // color
+  selectedColor = t&&t.color ? t.color : "none";
+  document.querySelectorAll(".color-dot").forEach(d=>{
+    d.classList.toggle("active", d.dataset.c===selectedColor);
+  });
+  $("#taskModal").classList.add("open");
+  setTimeout(()=>$("#tTitle").focus(),50);
+}
+$("#btnNew").onclick=()=>openTask(null);
+$("#tSave").onclick=()=>{
+  const title=$("#tTitle").value.trim();
+  if(!title){$("#tTitle").focus();return toast("اكتب عنوان المهمة");}
+  const id=$("#tId").value;
+  const color = selectedColor==="none" ? "" : selectedColor;
+  if(id){
+    const t=tasks.find(x=>x.id===id);
+    Object.assign(t,{title,desc:$("#tDesc").value.trim(),status:$("#tStatus").value,priority:$("#tPriority").value,color,deadline:$("#tDeadline").value||"",assignee:$("#tAssignee").value||""});
+  }else{
+    const maxNum=tasks.reduce((m,t)=>Math.max(m,t.num||0),0);
+    tasks.push({id:uid(),num:maxNum+1,title,desc:$("#tDesc").value.trim(),status:$("#tStatus").value,
+                priority:$("#tPriority").value,color,deadline:$("#tDeadline").value||"",assignee:$("#tAssignee").value||"",created:Date.now(),updates:[]});
+  }
+  save();render();$("#taskModal").classList.remove("open");toast("تم الحفظ ✓");
+};
+$("#tDelete").onclick=()=>{
+  const id=$("#tId").value;
+  if(!confirm("حذف المهمة وكل تحديثاتها؟"))return;
+  tasks=tasks.filter(t=>t.id!==id);
+  save();render();$("#taskModal").classList.remove("open");toast("تم الحذف");
+};
+
+/* ===== إضافة مسؤول جديد ===== */
+$("#btnAddPerson").onclick=()=>{
+  const name=prompt("اكتب اسم المسؤول الجديد:");
+  if(!name||!name.trim())return;
+  const n=name.trim();
+  if(people.includes(n))return toast("موجود مسبقاً");
+  people.push(n);
+  savePeople();
+  populateAssigneeSelects();
+  $("#tAssignee").value=n;
+  toast("تمت إضافة: "+n);
+};
+
+/* ===== فلتر المسؤول ===== */
+$("#filterAssignee").onchange=e=>{ filterAssignee=e.target.value; render(); };
+
+/* ===== تصدير / استيراد ===== */
+$("#btnExport").onclick=()=>{
+  const blob=new Blob([JSON.stringify(tasks,null,2)],{type:"application/json"});
+  const d=new Date(),p=n=>String(n).padStart(2,"0");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`tasks-${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}.json`;
+  a.click();URL.revokeObjectURL(a.href);
+};
+$("#btnImport").onclick=()=>$("#fileIn").click();
+$("#fileIn").onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      let data=JSON.parse(r.result);
+      if(!Array.isArray(data))throw 0;
+      // تنظيف وتأمين البيانات المستوردة
+      data = data.filter(t=>t&&typeof t==="object"&&t.id&&t.title).map(t=>({
+        id:t.id, title:String(t.title), desc:String(t.desc||""),
+        status:["new","doing","wait","done"].includes(t.status)?t.status:"new",
+        priority:t.priority==="high"?"high":"normal",
+        color:/^#[0-9a-fA-F]{6}$/.test(t.color)?t.color:"",
+        deadline:t.deadline||"", assignee:String(t.assignee||""),
+        created:Number(t.created)||Date.now(),
+        updates:Array.isArray(t.updates)?t.updates.filter(u=>u&&u.id&&u.text).map(u=>({
+          id:u.id, at:Number(u.at)||Date.now(), text:String(u.text)
+        })):[]
+      }));
+      if(!data.length)throw 0;
+      if(!confirm("دمج المهام المستوردة مع الحالية؟ (إلغاء = استبدال الكل)")){tasks=data;}
+      else{ const ids=new Set(tasks.map(t=>t.id)); data.forEach(t=>{if(!ids.has(t.id))tasks.push(t);}); }
+      save();render();toast("تم الاستيراد ✓ ("+data.length+" مهمة)");
+    }catch(err){toast("ملف غير صالح");}
+  };
+  r.readAsText(f);e.target.value="";
+};
+
+/* ================= ربط الـ AI ================= */
+function cfg(){try{return JSON.parse(localStorage.getItem(CFG)||"{}") }catch(e){return{};}}
+function setCfg(o){localStorage.setItem(CFG,JSON.stringify(o));}
+
+let provider = "claude";
+const PROVIDERS = {
+  claude:{ base:"https://api.anthropic.com", model:"claude-haiku-4-5", placeholder:"sk-ant-..." },
+  openai:{ base:"https://api.openai.com/v1", model:"gpt-4.1-mini", placeholder:"sk-..." },
+  custom:{ base:"", model:"", placeholder:"..." }
+};
+
+function setProvider(p){
+  provider = p;
+  document.querySelectorAll("#providerTabs .tab").forEach(t=>{
+    t.classList.toggle("active", t.dataset.prov===p);
+  });
+  const c = cfg();
+  const def = PROVIDERS[p];
+  $("#aiBase").value = c[p+"_base"] || def.base;
+  $("#aiModel").value = c[p+"_model"] || def.model;
+  $("#aiKey").value = c[p+"_key"] || "";
+  $("#aiKey").placeholder = def.placeholder;
+  // show/hide base URL field
+  $("#fBase").style.display = p==="custom" ? "" : "none";
+  // model placeholder
+  $("#aiModel").placeholder = def.model || "model-name";
+}
+
+$("#providerTabs").addEventListener("click", e=>{
+  const t=e.target.closest("[data-prov]"); if(!t) return;
+  setProvider(t.dataset.prov);
+});
+
+$("#btnAI").onclick=()=>{
+  const c=cfg();
+  provider = c.lastProvider || "claude";
+  setProvider(provider);
+  $("#aiModal").classList.add("open");
+};
+
+function boardText(){
+  return tasks.map(t=>{
+    const ups=[...(t.updates||[])].sort((a,b)=>a.at-b.at)
+      .map(u=>`    - [${fmt(u.at)}] ${u.text}`).join("\n")||"    (لا توجد تحديثات)";
+    return`• المهمة: ${t.title}\n  الحالة: ${STATUS[t.status]} | الأولوية: ${t.priority==="high"?"عالية":"عادية"} | آخر نشاط: ${fmt(lastAt(t))}\n  الوصف: ${t.desc||"—"}\n  التحديثات:\n${ups}`;
+  }).join("\n\n")||"لا توجد مهام.";
+}
+
+$("#aiRun").onclick=async()=>{
+  const base=$("#aiBase").value.trim().replace(/\/+$/,"");
+  const model=$("#aiModel").value.trim();
+  const key=$("#aiKey").value.trim();
+  const ask=$("#aiPrompt").value.trim();
+  if(!model||!key)return toast("أكمل النموذج والمفتاح");
+  if(provider==="custom"&&!base)return toast("أكمل عنوان الـ API");
+
+  // save per-provider
+  const c=cfg();
+  c[provider+"_base"]=base; c[provider+"_model"]=model; c[provider+"_key"]=key;
+  c.lastProvider=provider;
+  setCfg(c);
+  saveConfigFirebase();
+
+  const sys="أنت مساعد مدير مشاريع محترف. أجب بالعربية فقط. لا مقدمات ولا خاتمة — ابدأ مباشرة. استخدم النجوم ⭐ للأهمية وساعة ⏰ لآخر تحديث. لا تكرر بيانات المهام — حلّل واستنتج. استند فقط على البيانات المعطاة. التاريخ الآن: "+fmt(Date.now())+".";
+  const userMsg=`${ask}\n\n=== بيانات اللوحة (${tasks.length} مهمة) ===\n${boardText()}`;
+  const out=$("#aiOut"),st=$("#aiStatus");
+  out.textContent="";st.textContent="جارٍ الإرسال...";
+  $("#aiRun").disabled=true;
+  try{
+    let text;
+    if(provider==="claude"){
+      text = await callClaude(key, model, sys, userMsg);
+    } else {
+      const b = provider==="openai" ? "https://api.openai.com/v1" : base;
+      text = await callOpenAI(b, key, model, sys, userMsg);
+    }
+    out.textContent=text;
+    st.textContent="تم ✓";
+    $("#aiCopy").style.display="";
+  }catch(err){out.textContent="خطأ: "+err.message;st.textContent="فشل";$("#aiCopy").style.display="none";}
+  finally{$("#aiRun").disabled=false;}
+};
+
+$("#aiCopy").onclick=()=>{
+  const text=$("#aiOut").textContent;
+  if(!text)return;
+  navigator.clipboard.writeText(text).then(()=>toast("تم نسخ الملخص ✓")).catch(()=>{
+    const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);toast("تم نسخ الملخص ✓");
+  });
+};
+
+/* --- Claude (Anthropic Messages API) --- */
+async function callClaude(key, model, sys, user){
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{
+      "content-type":"application/json",
+      "x-api-key": key,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    },
+    body:JSON.stringify({
+      model,
+      max_tokens:4096,
+      system: sys,
+      messages:[{role:"user",content:user}]
+    })
+  });
+  const j = await res.json();
+  if(!res.ok) throw new Error(j?.error?.message || ("HTTP "+res.status));
+  // extract text from content blocks
+  if(j.content && Array.isArray(j.content)){
+    return j.content.filter(b=>b.type==="text").map(b=>b.text).join("\n");
+  }
+  return JSON.stringify(j,null,2);
+}
+
+/* --- OpenAI / Custom (Responses → Chat Completions fallback) --- */
+async function callOpenAI(base, key, model, sys, user){
+  let res=await fetch(base+"/responses",{
+    method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+    body:JSON.stringify({model,input:[{role:"system",content:sys},{role:"user",content:user}]})
+  });
+  if(res.status===404||res.status===400){
+    const alt=await fetch(base+"/chat/completions",{
+      method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+      body:JSON.stringify({model,messages:[{role:"system",content:sys},{role:"user",content:user}]})
+    });
+    const aj=await alt.json();
+    if(!alt.ok)throw new Error(aj?.error?.message||("HTTP "+alt.status));
+    return aj.choices?.[0]?.message?.content||JSON.stringify(aj,null,2);
+  }
+  const j=await res.json();
+  if(!res.ok)throw new Error(j?.error?.message||("HTTP "+res.status));
+  return typeof j.output_text==="string"&&j.output_text ? j.output_text :
+    (j.output||[]).flatMap(i=>(i.content||[]).filter(c=>c.type==="output_text").map(c=>c.text)).join("\n")||JSON.stringify(j,null,2);
+}
+
+/* ===== Firebase data helper ===== */
+function fbToArray(data){
+  const raw = Array.isArray(data) ? data : Object.values(data);
+  return raw.filter(t=>t&&typeof t==="object"&&t.id).map(t=>({
+    ...t,
+    updates: Array.isArray(t.updates) ? t.updates.filter(u=>u&&u.id) :
+             (t.updates && typeof t.updates==="object") ? Object.values(t.updates).filter(u=>u&&u.id) : []
+  }));
+}
+
+/* ================= Firebase real-time sync ================= */
+if(useFirebase){
+  tasksRef.once("value", snap=>{
+    const data = snap.val();
+    if(!data){
+      // القاعدة فاضية — نرفع كـ map
+      const map = {}; tasks.forEach(t=>{ if(t&&t.id) map[t.id]=t; });
+      tasksRef.set(map);
+      peopleRef.set(people);
+      toast("☁️ تم رفع المهام للسحابة");
+    } else {
+      tasks = fbToArray(data);
+      localStorage.setItem(KEY, JSON.stringify(tasks));
+      render();
+    }
+    firebaseReady = true;
+    tasksRef.on("value", snap2=>{
+      const d = snap2.val();
+      tasks = d ? fbToArray(d) : [];
+      localStorage.setItem(KEY, JSON.stringify(tasks));
+      render();
+    });
+  });
+
+  peopleRef.once("value", snap=>{
+    const data = snap.val();
+    if(data){
+      const arr = Array.isArray(data) ? data : Object.values(data);
+      if(arr.length){ people=arr; localStorage.setItem(PEOPLE_KEY,JSON.stringify(people)); populateAssigneeSelects(); }
+    }
+    peopleRef.on("value", snap2=>{
+      const d=snap2.val();
+      if(!d)return;
+      const arr2=Array.isArray(d)?d:Object.values(d);
+      if(arr2.length){ people=arr2; localStorage.setItem(PEOPLE_KEY,JSON.stringify(people)); populateAssigneeSelects(); }
+    });
+  });
+
+  configRef.on("value", snap=>{
+    const d=snap.val();
+    if(d&&typeof d==="object"){
+      localStorage.setItem(CFG_KEY,JSON.stringify(d));
+    }
+  });
+
+  const connRef = db.ref(".info/connected");
+  connRef.on("value", snap=>{
+    const si = document.getElementById("syncIcon");
+    if(snap.val()){
+      if(si){ si.textContent="☁️"; si.title="متصل بالسحابة"; si.style.opacity=".6"; }
+    } else {
+      if(si){ si.textContent="⚡"; si.title="غير متصل — يعمل محلياً"; si.style.opacity="1"; }
+    }
+  });
+} /* end useFirebase */
+
+/* ================= تشغيل ================= */
+populateAssigneeSelects();
+render();
+window.addEventListener("beforeunload",save);
+})();
+</script>
+</body>
+</html>
