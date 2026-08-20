@@ -613,7 +613,9 @@ function render(){
           <span class="badge">${(t.updates||[]).length} تحديث</span>
           <span class="badge">آخر نشاط: ${rel(lastAt(t))}</span>
           ${t.status!=="done"?(()=>{
-            const days=Math.floor((Date.now()-lastAt(t))/DAY);
+            const now=new Date(); now.setHours(0,0,0,0);
+            const last=new Date(lastAt(t)); last.setHours(0,0,0,0);
+            const days=Math.round((now-last)/DAY);
             if(days===0) return '<span class="stale-timer green">✅ محدّث اليوم</span>';
             const cls=days>=3?"red":days>=1?"amber":"green";
             const icon=days>=3?"🔴":days>=1?"🟡":"🟢";
