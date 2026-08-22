@@ -86,30 +86,21 @@ a{color:inherit;}
 .flow-svg{position:absolute; top:0; left:0; pointer-events:none; overflow:visible;}
 .flow-row-boxes{direction:ltr; display:flex; flex-wrap:wrap; gap:34px 30px; position:relative; z-index:1;}
 
-.task-box{width:270px; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:0; position:relative; box-shadow:0 1px 3px rgba(16,24,38,.06), 0 6px 16px -8px rgba(16,24,38,.1); transition:transform .2s, box-shadow .2s; overflow:hidden; cursor:pointer;}
-.task-box:hover{transform:translateY(-3px); box-shadow:0 4px 12px rgba(16,24,38,.1), 0 12px 28px -8px rgba(16,24,38,.16);}
-.task-box::before{content:""; position:absolute; top:0; left:0; right:0; height:4px; border-radius:16px 16px 0 0;}
-.task-box.st-on_track::before{background:linear-gradient(90deg,#2F9E63,#34D399);}
-.task-box.st-doing::before,.task-box.st-new::before{background:linear-gradient(90deg,var(--brand),#3B82F6);}
-.task-box.st-at_risk::before{background:linear-gradient(90deg,#E0A526,#F59E0B);}
-.task-box.st-delayed::before{background:linear-gradient(90deg,#D14343,#EF4444);}
-.task-box.st-done::before{background:linear-gradient(90deg,#6B7280,#9CA3AF);}
-.task-box.st-at_risk{border-color:rgba(224,165,38,.35);}
-.task-box.st-delayed{border-color:rgba(209,67,67,.25); background:linear-gradient(135deg,#FFF5F5,var(--surface));}
-.task-box.st-delayed .box-update{background:rgba(209,67,67,.06);}
-.task-box-inner{padding:18px 18px 14px;}
-.box-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
-.stars{font-size:11px; letter-spacing:1.5px; opacity:.85;}
+.task-box{width:250px; background:var(--surface); border:1.6px solid var(--line); border-radius:12px; padding:14px 15px; position:relative; box-shadow:0 1px 2px rgba(16,24,38,.05);}
+.task-box.st-at_risk{border-color:var(--warn);}
+.task-box.st-delayed{background:#F6D6D6; border-color:var(--line);}
+.task-box.st-delayed .box-update{background:#F0C6C6;}
+.box-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;}
+.stars{font-size:12.5px; letter-spacing:1px;}
 .stars .st.fill{color:var(--accent);}
 .stars .st.empty{color:#DEE3E9;}
-.status-dot{width:10px; height:10px; border-radius:50%; flex-shrink:0; box-shadow:0 0 0 2.5px rgba(255,255,255,.9), 0 0 0 3.5px currentColor; position:relative;}
-.box-title{direction:rtl; text-align:right; font-family:'Cairo',sans-serif; font-weight:800; font-size:14px; color:var(--ink); line-height:1.55; margin-bottom:12px; min-height:40px; letter-spacing:-.01em;}
-.box-meta{direction:rtl; text-align:right; font-size:11px; color:var(--muted); display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:12px; background:var(--paper); border-radius:10px; padding:10px 12px;}
-.box-meta div{display:flex; flex-direction:column; gap:2px;}
-.box-meta span{font-size:10px; text-transform:uppercase; letter-spacing:.04em; opacity:.7;}
-.box-meta b{color:var(--ink); font-weight:700; font-size:11.5px;}
-.box-update{direction:rtl; text-align:right; font-size:11.5px; color:var(--muted); background:var(--paper); border-top:1px solid var(--line); padding:12px 18px; line-height:1.7; margin:0 -0px;}
-.box-update b{color:var(--ink); font-weight:700;}
+.status-dot{width:9px; height:9px; border-radius:50%; flex-shrink:0;}
+.box-title{direction:rtl; text-align:right; font-family:'Tajawal',sans-serif; font-weight:700; font-size:13.5px; color:var(--ink); line-height:1.5; margin-bottom:9px; min-height:40px;}
+.box-meta{direction:rtl; text-align:right; font-size:11.5px; color:var(--muted); display:flex; flex-direction:column; gap:4px; margin-bottom:9px;}
+.box-meta div{display:flex; justify-content:space-between; gap:8px;}
+.box-meta b{color:var(--ink); font-weight:600;}
+.box-update{direction:rtl; text-align:right; font-size:11.5px; color:var(--muted); background:var(--paper); border-radius:8px; padding:7px 9px; line-height:1.6;}
+.box-update b{color:var(--ink); font-weight:600;}
 
 .note{margin-top:16px; font-size:12.5px; color:var(--muted); background:rgba(255,255,255,.6); border:1px dashed var(--line); border-radius:10px; padding:12px 16px; line-height:1.8;}
 .note b{color:var(--ink);}
@@ -924,16 +915,20 @@ html,body,#ms-app,#ms-app button,#ms-app input,#ms-app select,#ms-app textarea,#
         <div class="ms-brand-note">نظام موحد لإدارة وتوزيع ومتابعة مهام محفظة المشروعات</div>
       </div>
       <nav class="ms-side-nav">
-        <button class="ms-nav-item" onclick="msOpenWorkspace('all',this);msCreateTask()"><span class="ms-nav-main"><span class="ms-nav-ico">＋</span><span>تسجيل مهمة</span></span><span class="ms-nav-arrow">‹</span></button>
+        <!-- 1. الإحصائيات العامة -->
+        <button class="ms-nav-item active" data-ms-view="dashboard" onclick="msShowDashboard(this)"><span class="ms-nav-main"><span class="ms-nav-ico">▥</span><span>الإحصائيات العامة</span></span><span class="ms-nav-arrow">‹</span></button>
+        <!-- 2. المهام (مع إنشاء مهمة بداخلها) -->
         <div class="ms-nav-group" id="ms-tasks-nav-group">
           <button class="ms-nav-item ms-nav-parent" data-ms-nav="all" aria-expanded="false" onclick="msOpenTasksMenu(this)"><span class="ms-nav-main"><span class="ms-nav-ico">▣</span><span>المهام</span></span><span class="ms-nav-arrow">‹</span></button>
           <div class="ms-nav-submenu" id="ms-tasks-submenu">
+            <button class="ms-nav-subitem" onclick="msOpenWorkspace('all',this);msCreateTask()"><span class="ms-sub-dot" style="background:#39a96b"></span><span>＋ تسجيل مهمة جديدة</span></button>
             <button class="ms-nav-subitem" data-ms-nav="mine" onclick="msSetFilter('mine',this)"><span class="ms-sub-dot"></span><span>مهامي</span></button>
             <button id="ms-at-risk-nav" class="ms-nav-subitem ms-nav-risk-sub" data-ms-nav="at_risk" onclick="msSetFilter('at_risk',this)"><span class="ms-sub-dot"></span><span>المهام المتعثرة</span><span id="ms-at-risk-nav-count" class="ms-nav-count">0</span></button>
             <button class="ms-nav-subitem" data-ms-nav="delayed" onclick="msSetFilter('delayed',this)"><span class="ms-sub-dot"></span><span>المهام المتأخرة</span></button>
             <button class="ms-nav-subitem" data-ms-nav="done" onclick="msSetFilter('done',this)"><span class="ms-sub-dot"></span><span>المهام المنجزة</span></button>
           </div>
         </div>
+        <!-- 3. البرامج -->
         <div class="ms-nav-group" id="ms-programs-nav-group">
           <button class="ms-nav-item ms-nav-parent" data-ms-nav="programs" aria-expanded="false" onclick="msToggleProgramsMenu(this)"><span class="ms-nav-main"><span class="ms-nav-ico">▦</span><span>البرامج</span></span><span class="ms-nav-arrow">‹</span></button>
           <div class="ms-nav-submenu" id="ms-programs-submenu">
@@ -956,16 +951,28 @@ html,body,#ms-app,#ms-app button,#ms-app input,#ms-app select,#ms-app textarea,#
             </div>
           </div>
         </div>
-        <button class="ms-nav-item manager-only" onclick="msOpenWorkspace('all',this);msShowTeam()"><span class="ms-nav-main"><span class="ms-nav-ico">♙</span><span>الفريق والمسؤولون</span></span><span class="ms-nav-arrow">‹</span></button>
-        <button class="ms-nav-item" onclick="msOpenWorkspace('all',this);openReportsPanel()"><span class="ms-nav-main"><span class="ms-nav-ico">◔</span><span>التقارير</span></span><span class="ms-nav-arrow">‹</span></button>
-        <button class="ms-nav-item" onclick="msOpenWorkspace('all',this);msFocusSearch()"><span class="ms-nav-main"><span class="ms-nav-ico">⌕</span><span>بحث</span></span><span class="ms-nav-arrow">‹</span></button>
-        <button class="ms-nav-item" onclick="msShowAgreements(this)"><span class="ms-nav-main"><span class="ms-nav-ico">📋</span><span>الاتفاقيات</span></span><span class="ms-nav-arrow">‹</span></button>
-        <button class="ms-nav-item" onclick="msShowSharedFiles(this)"><span class="ms-nav-main"><span class="ms-nav-ico">📁</span><span>ملفات مشتركة</span></span><span class="ms-nav-arrow">‹</span></button>
-        <button class="ms-nav-item" onclick="msShowSales(this)"><span class="ms-nav-main"><span class="ms-nav-ico">💰</span><span>المبيعات والتحصيل</span></span><span class="ms-nav-arrow">‹</span></button>
+        <!-- 4. الاتفاقيات (بوكسين: اتفاقيات + حالة المبيعات) -->
+        <div class="ms-nav-group" id="ms-agreements-nav-group">
+          <button class="ms-nav-item ms-nav-parent" aria-expanded="false" onclick="this.setAttribute('aria-expanded',this.getAttribute('aria-expanded')==='true'?'false':'true');var s=document.getElementById('ms-agreements-submenu');s.style.display=s.style.display==='block'?'none':'block'"><span class="ms-nav-main"><span class="ms-nav-ico">📋</span><span>الاتفاقيات</span></span><span class="ms-nav-arrow">‹</span></button>
+          <div class="ms-nav-submenu" id="ms-agreements-submenu" style="display:none">
+            <button class="ms-nav-subitem" onclick="window.msShowAgreementsOnly(this)"><span class="ms-sub-dot" style="background:#2f78b8"></span><span>📋 الاتفاقيات والشراكات</span></button>
+            <button class="ms-nav-subitem" onclick="window.msShowSalesUpdates(this)"><span class="ms-sub-dot" style="background:#39a96b"></span><span>📊 حالة المبيعات على الشركات</span></button>
+          </div>
+        </div>
+        <!-- 5. حالة المخططات -->
         <button class="ms-nav-item" onclick="msShowPlansStatus(this)"><span class="ms-nav-main"><span class="ms-nav-ico">🗺️</span><span>حالة المخططات</span></span><span class="ms-nav-arrow">‹</span></button>
+        <!-- 6. الفريق -->
+        <button class="ms-nav-item manager-only" onclick="msOpenWorkspace('all',this);msShowTeam()"><span class="ms-nav-main"><span class="ms-nav-ico">♙</span><span>الفريق والمسؤولون</span></span><span class="ms-nav-arrow">‹</span></button>
+        <!-- 7. التقارير -->
+        <button class="ms-nav-item" onclick="msOpenWorkspace('all',this);openReportsPanel()"><span class="ms-nav-main"><span class="ms-nav-ico">◔</span><span>التقارير</span></span><span class="ms-nav-arrow">‹</span></button>
+        <!-- 8. ملفات مشتركة -->
+        <button class="ms-nav-item" onclick="msShowSharedFiles(this)"><span class="ms-nav-main"><span class="ms-nav-ico">📁</span><span>ملفات مشتركة</span></span><span class="ms-nav-arrow">‹</span></button>
+        <!-- 9. المبيعات والتحصيل -->
+        <button class="ms-nav-item" onclick="msShowSales(this)"><span class="ms-nav-main"><span class="ms-nav-ico">💰</span><span>المبيعات والتحصيل</span></span><span class="ms-nav-arrow">‹</span></button>
+        <!-- 10. تقويم الاستحقاقات -->
         <button class="ms-nav-item" onclick="window.showDueCalendar()"><span class="ms-nav-main"><span class="ms-nav-ico">📅</span><span>تقويم الاستحقاقات</span></span><span class="ms-nav-arrow">‹</span></button>
+        <!-- 11. سجل التدقيق -->
         <button class="ms-nav-item" onclick="window.showAuditLog()"><span class="ms-nav-main"><span class="ms-nav-ico">📝</span><span>سجل التدقيق</span></span><span class="ms-nav-arrow">‹</span></button>
-        <button class="ms-nav-item active" data-ms-view="dashboard" onclick="msShowDashboard(this)"><span class="ms-nav-main"><span class="ms-nav-ico">▥</span><span>الإحصائيات العامة</span></span><span class="ms-nav-arrow">‹</span></button>
       </nav>
     </aside>
 
@@ -1541,19 +1548,17 @@ function renderTaskBox(t){
   const dueSoon = isDueSoon(t);
   return `
     <div class="task-box st-${t.status}${dueSoon ? ' due-soon' : ''}" data-id="${t.id}" data-code="${t.code || ''}" onclick="openLogModal('${t.id}')">
-      <div class="task-box-inner">
-        <div class="box-head">
-          <div class="head-left">${starHtml(t.importance)}<span class="status-dot" style="color:${sm.hex};background:${sm.hex}" title="${sm.label}"></span></div>
-          ${t.code ? '<span class="task-code" title="كود المهمة">' + t.code + '</span>' : ''}
-        </div>
-        <div class="box-title">${t.name}</div>
-        ${dueSoon ? '<div class="due-soon-badge">⏰ قريبة من الموعد النهائي</div>' : ''}
-        <div class="box-meta">
-          <div><span>تاريخ البداية</span><b>${fmtDate(t.start)}</b></div>
-          <div><span>المسؤول</span><b>${t.responsible}</b></div>
-          <div><span>المدة المتوقعة</span><b>${t.expected}</b></div>
-          <div><span>الانتهاء المتوقع</span><b>${fmtDate(t.end)}</b></div>
-        </div>
+      <div class="box-head">
+        <div class="head-left">${starHtml(t.importance)}<span class="status-dot" style="background:${sm.hex}" title="${sm.label}"></span></div>
+        ${t.code ? '<span class="task-code" title="كود المهمة">' + t.code + '</span>' : ''}
+      </div>
+      <div class="box-title">${t.name}</div>
+      ${dueSoon ? '<div class="due-soon-badge">⏰ قريبة من الموعد النهائي</div>' : ''}
+      <div class="box-meta">
+        <div><span>تاريخ البداية</span><b>${fmtDate(t.start)}</b></div>
+        <div><span>المسؤول</span><b>${t.responsible}</b></div>
+        <div><span>المدة المتوقعة</span><b>${t.expected}</b></div>
+        <div><span>الانتهاء المتوقع</span><b>${fmtDate(t.end)}</b></div>
       </div>
       <div class="box-update"><b>التحديث الحالي:</b> ${t.update}</div>
     </div>`;
@@ -3925,95 +3930,132 @@ renderOverview();
     {id:'AGR-007', title:'اتفاقية تدريب طلاب مع المؤسسة العامة للتدريب', partner:'المؤسسة العامة للتدريب التقني والمهني', type:'اتفاقية تدريب', status:'سارية', startDate:'2026-02-01', endDate:'2026-12-31', metric:'متدرب', target:50, delivered:32, responsible:'طيبة عشيري', notes:'تدريب طلاب وطالبات على رأس العمل في مشاريع المحفظة — تخصصات هندسية وإدارية'}
   ];
 
+  /* بيانات تحديث المبيعات على الشركات */
+  var SALES_UPDATES=[
+    {project:'ينبع الصناعية', totalLabel:'الاجمالي', rows:[
+      {company:'ياسرف', demand:200, status:'تم البيع', statusColor:'#39a96b', updated:'2026-08-20'},
+      {company:'مرافق', demand:70, status:'يجري التنسيق مع الشركة لإنهاء إجراءاتها الداخلية تمهيداً لبدء التعاقد مع الموظفين عبر منصة سكني', statusColor:'#e2a23c', updated:'2026-08-18'},
+      {company:'الفارابي', demand:30, status:'تم استكمال تخصيص الوحدات للموظفين المستحقين، ويجري التنسيق مع الشركة لاستكمال الإجراءات الداخلية والبدء في إبرام العقود عبر منصة سكني', statusColor:'#2f78b8', updated:'2026-08-15'},
+      {company:'سامرف', demand:60, status:'لم يتم الانتهاء من تخصيص واختيار الوحدات من قِبل الموظفين، ويجري التنسيق مع إدارة الشركة لعقد ورشة عمل تعريفية لموظفيها لاستكمال إجراءات الاختيار', statusColor:'#e2a23c', updated:'2026-08-12'},
+      {company:'العبيكان', demand:23, status:'طلبت الشركة مهلة إضافية لاستكمال اعتماد لائحة دعم تملك المساكن لموظفيها من مجلس الإدارة', statusColor:'#e2a23c', updated:'2026-08-10'},
+      {company:'أرامكو', demand:0, status:'تمت الموافقة المبدئية على توقيع اتفاقية الشراكة، ويجري العمل على إنهاء الملاحظات تمهيداً لاستكمال إجراءات التوقيع', statusColor:'#8b5cf6', updated:'2026-08-08'},
+      {company:'سابك', demand:0, status:'تم اعتماد اللائحة الداخلية لدعم تملك المساكن، والشركة بصدد التعاقد مع بنوك محددة للتمويل، ومن المتوقع الانتهاء خلال شهر سبتمبر', statusColor:'#8b5cf6', updated:'2026-08-05'},
+      {company:'شركات أخرى', demand:394, status:'تحت الاجراء', statusColor:'#6f7f92', updated:'2026-08-20'}
+    ], total:777},
+    {project:'الجبيل الصناعية', totalLabel:'الاجمالي', rows:[
+      {company:'صدارة', demand:50, status:'تم اعتماد عدد 50 مستفيد جديد وسيتم البيع لهم خلال مركز المبيعات', statusColor:'#39a96b', updated:'2026-08-19'},
+      {company:'ساتورب', demand:260, status:'بانتظار رد الشركة للمستحقين والراغبين بالتملك وسيتم المتابعة معهم', statusColor:'#e2a23c', updated:'2026-08-17'},
+      {company:'معادن', demand:800, status:'تم تحديد موعد من قبل الشركة بإرسال الموظفين لمركز المبيعات بداية شهر سبتمبر', statusColor:'#2f78b8', updated:'2026-08-14'},
+      {company:'ساسرف', demand:140, status:'تمت مخاطبة الشركة بخصوص آلية الشراء المباشر بالمشروع وجاري أخذ الموافقات اللازمة من الإدارة', statusColor:'#e2a23c', updated:'2026-08-11'},
+      {company:'المتقدمة', demand:150, status:'تمت إفادتنا بأن جاري اعتماد الإدارة للائحة الدعم', statusColor:'#e2a23c', updated:'2026-08-09'},
+      {company:'تصنيع', demand:100, status:'تمت إفادتنا بأن جاري اعتماد الإدارة للائحة الدعم', statusColor:'#e2a23c', updated:'2026-08-07'},
+      {company:'أرامكو', demand:0, status:'تمت الموافقة المبدئية على توقيع اتفاقية الشراكة، ويجري العمل على إنهاء الملاحظات تمهيداً لاستكمال إجراءات التوقيع', statusColor:'#8b5cf6', updated:'2026-08-06'},
+      {company:'سابك', demand:0, status:'تم اعتماد اللائحة الداخلية لدعم تملك المساكن، والشركة بصدد التعاقد مع بنوك محددة للتمويل، ومن المتوقع الانتهاء خلال شهر سبتمبر', statusColor:'#8b5cf6', updated:'2026-08-04'}
+    ], total:1500}
+  ];
+
+  /* دالة مشتركة لعرض جداول حالة المبيعات */
+  function renderSalesUpdatesTables(){
+    return SALES_UPDATES.map(function(proj){
+      return '<section class="ms-dashboard-card" style="margin-bottom:18px;cursor:default">'+
+        '<div class="ms-dashboard-card-head" style="background:linear-gradient(135deg,#1b3a5c,#2f78b8);height:auto;padding:14px 18px">'+
+          '<div class="ms-dashboard-card-title" style="color:#fff;font-size:16px">🏗️ تحديث المبيعات على الشركات بـ'+proj.project+'</div>'+
+          '<div style="color:#ffffffcc;font-size:12px">إجمالي الطلب المبدئي: <b style="color:#fff;font-size:15px">'+proj.total+'</b> وحدة</div>'+
+        '</div>'+
+        '<div class="ms-dashboard-card-body" style="padding:0;overflow-x:auto">'+
+          '<table class="ms-deadline-table" style="width:100%;min-width:700px"><thead><tr>'+
+            '<th style="width:120px;background:#1b3a5c;color:#fff;padding:10px 14px;text-align:right">الشركة</th>'+
+            '<th style="width:100px;background:#1b3a5c;color:#fff;padding:10px 14px;text-align:center">الطلب المبدئي</th>'+
+            '<th style="background:#1b3a5c;color:#fff;padding:10px 14px;text-align:right">الحالة</th>'+
+            '<th style="width:130px;background:#1b3a5c;color:#fff;padding:10px 14px;text-align:center">تاريخ التحديث</th>'+
+          '</tr></thead><tbody>'+
+          proj.rows.map(function(r,i){
+            var bg=i%2===0?'#f8fafc':'#fff';
+            return '<tr style="background:'+bg+'">'+
+              '<td style="padding:10px 14px;font-weight:700;color:#1b3a5c;border-bottom:1px solid #e5e9ee">'+r.company+'</td>'+
+              '<td style="padding:10px 14px;text-align:center;font-weight:700;color:#2f78b8;font-size:15px;border-bottom:1px solid #e5e9ee">'+(r.demand||'-')+'</td>'+
+              '<td style="padding:10px 14px;font-size:12.5px;line-height:1.7;border-bottom:1px solid #e5e9ee"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+r.statusColor+';margin-left:6px;vertical-align:middle"></span>'+r.status+'</td>'+
+              '<td style="padding:10px 14px;text-align:center;font-size:12px;color:#6f7f92;border-bottom:1px solid #e5e9ee"><span style="background:#e5e9ee;padding:3px 10px;border-radius:12px;font-weight:600;white-space:nowrap">'+r.updated+'</span></td>'+
+            '</tr>';
+          }).join('')+
+          '<tr style="background:#d4a84220"><td style="padding:10px 14px;font-weight:800;color:#1b3a5c;font-size:14px">'+proj.totalLabel+'</td><td style="padding:10px 14px;text-align:center;font-weight:800;color:#39a96b;font-size:16px">'+proj.total+'</td><td colspan="2" style="padding:10px 14px"></td></tr>'+
+        '</tbody></table></div></section>';
+    }).join('');
+  }
+
+  /* دوال مساعدة للاتفاقيات */
+  function agrHelpers(){
+    var statusColors={سارية:'#39a96b','قيد التفاوض':'#e2a23c','قيد المراجعة القانونية':'#2f78b8',معلقة:'#e66170','قيد الدراسة':'#8b5cf6'};
+    var today=new Date();
+    function daysLeft(endDate){var d=new Date(endDate+'T00:00:00');return Math.ceil((d-today)/86400000);}
+    function timerBadge(days){
+      if(days<0) return '<span style="background:#e6617022;color:#e66170;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700">⚠ منتهية منذ '+Math.abs(days)+' يوم</span>';
+      if(days<=30) return '<span style="background:#e2a23c22;color:#e2a23c;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700">⏰ متبقي '+days+' يوم</span>';
+      if(days<=90) return '<span style="background:#2f78b822;color:#2f78b8;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700">📅 متبقي '+days+' يوم</span>';
+      return '<span style="background:#39a96b22;color:#39a96b;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700">✓ متبقي '+days+' يوم</span>';
+    }
+    function progressBar(delivered,target,metric){
+      if(!target) return '<div style="font-size:12px;color:#6f7f92;font-style:italic">العدد قيد التحديد</div>';
+      var pct=Math.round(delivered/target*100);
+      var c=pct>=80?'#39a96b':pct>=40?'#2f78b8':'#e2a23c';
+      return '<div style="margin-top:8px"><div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px"><span style="font-weight:700;color:#29476e">مؤشر الاستكمال</span><span style="font-weight:800;color:'+c+'">'+delivered+' / '+target+' '+metric+' ('+pct+'%)</span></div><div style="background:#e5e9ee;height:10px;border-radius:5px;overflow:hidden"><div style="background:'+c+';height:100%;width:'+pct+'%;border-radius:5px;transition:width .3s"></div></div></div>';
+    }
+    return {statusColors:statusColors,today:today,daysLeft:daysLeft,timerBadge:timerBadge,progressBar:progressBar};
+  }
+
+  function renderAgreementsCards(){
+    var h=agrHelpers();
+    var totalDelivered=AGREEMENTS_DATA.reduce(function(s,a){return s+a.delivered},0);
+    var totalTarget=AGREEMENTS_DATA.filter(function(a){return a.target>0}).reduce(function(s,a){return s+a.target},0);
+    return '<div class="ms-dashboard-hero"><div><h1>📋 إدارة الاتفاقيات والشراكات</h1><p>متابعة جميع الاتفاقيات والشراكات المرتبطة بمشاريع المحفظة مع الشركات والجهات المعنية.</p></div><div class="ms-dashboard-date">'+h.today.toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+'</div></div>'+
+      '<div class="ms-kpi-grid" style="margin-bottom:16px">'+
+        '<div class="ms-kpi success"><div class="ms-kpi-label"><span>اتفاقيات سارية</span><span class="ms-kpi-icon">✓</span></div><div class="ms-kpi-value">'+AGREEMENTS_DATA.filter(function(a){return a.status==='سارية'}).length+'<small>اتفاقية</small></div></div>'+
+        '<div class="ms-kpi warning"><div class="ms-kpi-label"><span>قيد التفاوض / الدراسة</span><span class="ms-kpi-icon">⟳</span></div><div class="ms-kpi-value">'+AGREEMENTS_DATA.filter(function(a){return a.status!=='سارية'}).length+'<small>اتفاقية</small></div></div>'+
+        '<div class="ms-kpi neutral"><div class="ms-kpi-label"><span>إجمالي الاتفاقيات</span><span class="ms-kpi-icon">□</span></div><div class="ms-kpi-value">'+AGREEMENTS_DATA.length+'<small>اتفاقية</small></div></div>'+
+        '<div class="ms-kpi neutral"><div class="ms-kpi-label"><span>إجمالي المسلّم</span><span class="ms-kpi-icon">▣</span></div><div class="ms-kpi-value">'+totalDelivered+' <small>/ '+totalTarget+'</small></div></div>'+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;gap:12px">'+
+      AGREEMENTS_DATA.map(function(a){
+        var sc=h.statusColors[a.status]||'#6f7f92';
+        var dl=h.daysLeft(a.endDate);
+        return '<div class="ms-dashboard-card" style="cursor:default"><div class="ms-dashboard-card-head" style="border-right:4px solid '+sc+';height:auto;padding:12px 16px"><div style="flex:1"><div class="ms-dashboard-card-title" style="margin-bottom:6px"><span style="font-size:11px;background:'+sc+';color:#fff;padding:3px 8px;border-radius:4px">'+a.id+'</span> '+a.title+'</div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span style="background:'+sc+'22;color:'+sc+';padding:3px 10px;border-radius:999px;font-weight:700;font-size:11px">'+a.status+'</span>'+h.timerBadge(dl)+'</div></div><div style="display:flex;gap:6px;flex-shrink:0"><button onclick="alert(\'📄 استعراض وثيقة الاتفاقية: '+a.id+'\\n'+a.title+'\\n\\nسيتم فتح الوثيقة من الأرشيف...\')" style="background:var(--ms-navy);color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:11.5px;cursor:pointer;font-family:inherit;font-weight:700">📄 استعراض الوثيقة</button></div></div>'+
+        '<div class="ms-dashboard-card-body"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;font-size:12.5px"><div><span style="color:#6f7f92">الشريك:</span> <b>'+a.partner+'</b></div><div><span style="color:#6f7f92">النوع:</span> <b>'+a.type+'</b></div><div><span style="color:#6f7f92">تاريخ البداية:</span> <b>'+a.startDate+'</b></div><div><span style="color:#6f7f92">تاريخ الانتهاء:</span> <b>'+a.endDate+'</b></div><div><span style="color:#6f7f92">المسؤول:</span> <b>'+a.responsible+'</b></div></div>'+
+        h.progressBar(a.delivered,a.target,a.metric)+
+        '<div style="margin-top:10px;padding-top:10px;border-top:1px dashed #dbe2ea;font-size:12px;color:#6f7f92">💡 '+a.notes+'</div></div></div>';
+      }).join('')+
+      '</div>';
+  }
+
+  /* عرض الاتفاقيات فقط */
+  window.msShowAgreementsOnly=function(navEl){
+    showCustomPanel('ms-agreements-panel', navEl, function(){
+      document.getElementById('ms-agreements-content').innerHTML=renderAgreementsCards();
+    });
+  };
+
+  /* عرض حالة المبيعات على الشركات فقط */
+  window.msShowSalesUpdates=function(navEl){
+    showCustomPanel('ms-agreements-panel', navEl, function(){
+      var today=new Date();
+      var totalAll=SALES_UPDATES.reduce(function(s,p){return s+p.total},0);
+      document.getElementById('ms-agreements-content').innerHTML=
+        '<div class="ms-dashboard-hero"><div><h1>📊 حالة المبيعات على الشركات بالمشاريع</h1><p>تحديث حالة المبيعات والاتفاقيات مع الشركات في المدن الصناعية — مع تاريخ آخر تحديث لكل شركة.</p></div><div class="ms-dashboard-date">'+today.toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+'</div></div>'+
+        '<div class="ms-kpi-grid" style="margin-bottom:16px">'+
+          '<div class="ms-kpi neutral"><div class="ms-kpi-label"><span>إجمالي الطلب المبدئي</span><span class="ms-kpi-icon">▣</span></div><div class="ms-kpi-value">'+totalAll+'<small>وحدة</small></div></div>'+
+          '<div class="ms-kpi success"><div class="ms-kpi-label"><span>ينبع الصناعية</span><span class="ms-kpi-icon">🏗️</span></div><div class="ms-kpi-value">'+SALES_UPDATES[0].total+'<small>وحدة</small></div></div>'+
+          '<div class="ms-kpi warning"><div class="ms-kpi-label"><span>الجبيل الصناعية</span><span class="ms-kpi-icon">🏗️</span></div><div class="ms-kpi-value">'+SALES_UPDATES[1].total+'<small>وحدة</small></div></div>'+
+        '</div>'+
+        renderSalesUpdatesTables();
+    });
+  };
+
+  /* الدالة الأصلية للتوافق — تعرض كلا القسمين */
   window.msShowAgreements=function(navEl){
     showCustomPanel('ms-agreements-panel', navEl, function(){
-      const statusColors={سارية:'#39a96b','قيد التفاوض':'#e2a23c','قيد المراجعة القانونية':'#2f78b8',معلقة:'#e66170','قيد الدراسة':'#8b5cf6'};
-      const host=document.getElementById('ms-agreements-content');
-      const today=new Date();
-      function daysLeft(endDate){const d=new Date(endDate+'T00:00:00');return Math.ceil((d-today)/86400000);}
-      function timerBadge(days){
-        if(days<0) return '<span style="background:#e6617022;color:#e66170;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700">⚠ منتهية منذ '+Math.abs(days)+' يوم</span>';
-        if(days<=30) return '<span style="background:#e2a23c22;color:#e2a23c;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700">⏰ متبقي '+days+' يوم</span>';
-        if(days<=90) return '<span style="background:#2f78b822;color:#2f78b8;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700">📅 متبقي '+days+' يوم</span>';
-        return '<span style="background:#39a96b22;color:#39a96b;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700">✓ متبقي '+days+' يوم</span>';
-      }
-      function progressBar(delivered,target,metric){
-        if(!target) return '<div style="font-size:12px;color:#6f7f92;font-style:italic">العدد قيد التحديد</div>';
-        const pct=Math.round(delivered/target*100);
-        const c=pct>=80?'#39a96b':pct>=40?'#2f78b8':'#e2a23c';
-        return '<div style="margin-top:8px"><div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px"><span style="font-weight:700;color:#29476e">مؤشر الاستكمال</span><span style="font-weight:800;color:'+c+'">'+delivered+' / '+target+' '+metric+' ('+pct+'%)</span></div><div style="background:#e5e9ee;height:10px;border-radius:5px;overflow:hidden"><div style="background:'+c+';height:100%;width:'+pct+'%;border-radius:5px;transition:width .3s"></div></div></div>';
-      }
-      const totalDelivered=AGREEMENTS_DATA.reduce((s,a)=>s+a.delivered,0);
-      const totalTarget=AGREEMENTS_DATA.filter(a=>a.target>0).reduce((s,a)=>s+a.target,0);
-      host.innerHTML=
-        '<div class="ms-dashboard-hero"><div><h1>📋 إدارة الاتفاقيات والشراكات</h1><p>متابعة جميع الاتفاقيات والشراكات المرتبطة بمشاريع المحفظة مع الشركات والجهات المعنية.</p></div><div class="ms-dashboard-date">'+today.toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+'</div></div>'+
-        '<div class="ms-kpi-grid" style="margin-bottom:16px">'+
-          '<div class="ms-kpi success"><div class="ms-kpi-label"><span>اتفاقيات سارية</span><span class="ms-kpi-icon">✓</span></div><div class="ms-kpi-value">'+AGREEMENTS_DATA.filter(a=>a.status==='سارية').length+'<small>اتفاقية</small></div></div>'+
-          '<div class="ms-kpi warning"><div class="ms-kpi-label"><span>قيد التفاوض / الدراسة</span><span class="ms-kpi-icon">⟳</span></div><div class="ms-kpi-value">'+AGREEMENTS_DATA.filter(a=>a.status!=='سارية').length+'<small>اتفاقية</small></div></div>'+
-          '<div class="ms-kpi neutral"><div class="ms-kpi-label"><span>إجمالي الاتفاقيات</span><span class="ms-kpi-icon">□</span></div><div class="ms-kpi-value">'+AGREEMENTS_DATA.length+'<small>اتفاقية</small></div></div>'+
-          '<div class="ms-kpi neutral"><div class="ms-kpi-label"><span>إجمالي المسلّم</span><span class="ms-kpi-icon">▣</span></div><div class="ms-kpi-value">'+totalDelivered+' <small>/ '+totalTarget+'</small></div></div>'+
-        '</div>'+
-        '<div style="display:flex;flex-direction:column;gap:12px">'+
-        AGREEMENTS_DATA.map(a=>{
-          const sc=statusColors[a.status]||'#6f7f92';
-          const dl=daysLeft(a.endDate);
-          return '<div class="ms-dashboard-card" style="cursor:default"><div class="ms-dashboard-card-head" style="border-right:4px solid '+sc+';height:auto;padding:12px 16px"><div style="flex:1"><div class="ms-dashboard-card-title" style="margin-bottom:6px"><span style="font-size:11px;background:'+sc+';color:#fff;padding:3px 8px;border-radius:4px">'+a.id+'</span> '+a.title+'</div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span style="background:'+sc+'22;color:'+sc+';padding:3px 10px;border-radius:999px;font-weight:700;font-size:11px">'+a.status+'</span>'+timerBadge(dl)+'</div></div><div style="display:flex;gap:6px;flex-shrink:0"><button onclick="alert(\'📄 استعراض وثيقة الاتفاقية: '+a.id+'\\n'+a.title+'\\n\\nسيتم فتح الوثيقة من الأرشيف...\')" style="background:var(--ms-navy);color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:11.5px;cursor:pointer;font-family:inherit;font-weight:700">📄 استعراض الوثيقة</button></div></div>'+
-          '<div class="ms-dashboard-card-body"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;font-size:12.5px"><div><span style="color:#6f7f92">الشريك:</span> <b>'+a.partner+'</b></div><div><span style="color:#6f7f92">النوع:</span> <b>'+a.type+'</b></div><div><span style="color:#6f7f92">تاريخ البداية:</span> <b>'+a.startDate+'</b></div><div><span style="color:#6f7f92">تاريخ الانتهاء:</span> <b>'+a.endDate+'</b></div><div><span style="color:#6f7f92">المسؤول:</span> <b>'+a.responsible+'</b></div></div>'+
-          progressBar(a.delivered,a.target,a.metric)+
-          '<div style="margin-top:10px;padding-top:10px;border-top:1px dashed #dbe2ea;font-size:12px;color:#6f7f92">💡 '+a.notes+'</div></div></div>';
-        }).join('')+
-        '</div>'+
-        /* ===== تحديث مبيعات الشركات ===== */
+      document.getElementById('ms-agreements-content').innerHTML=
+        renderAgreementsCards()+
         '<h2 style="margin:32px 0 16px;font-size:20px;color:var(--ms-navy,#1b3a5c);border-bottom:3px solid var(--ms-navy,#1b3a5c);padding-bottom:8px">📊 تحديث مبيعات واتفاقيات الشركات بالمشاريع</h2>'+
-        (function(){
-          var SALES_UPDATES=[
-            {project:'ينبع الصناعية', totalLabel:'الاجمالي', rows:[
-              {company:'ياسرف', demand:200, status:'تم البيع', statusColor:'#39a96b', updated:'2026-08-20'},
-              {company:'مرافق', demand:70, status:'يجري التنسيق مع الشركة لإنهاء إجراءاتها الداخلية تمهيداً لبدء التعاقد مع الموظفين عبر منصة سكني', statusColor:'#e2a23c', updated:'2026-08-18'},
-              {company:'الفارابي', demand:30, status:'تم استكمال تخصيص الوحدات للموظفين المستحقين، ويجري التنسيق مع الشركة لاستكمال الإجراءات الداخلية والبدء في إبرام العقود عبر منصة سكني', statusColor:'#2f78b8', updated:'2026-08-15'},
-              {company:'سامرف', demand:60, status:'لم يتم الانتهاء من تخصيص واختيار الوحدات من قِبل الموظفين، ويجري التنسيق مع إدارة الشركة لعقد ورشة عمل تعريفية لموظفيها لاستكمال إجراءات الاختيار', statusColor:'#e2a23c', updated:'2026-08-12'},
-              {company:'العبيكان', demand:23, status:'طلبت الشركة مهلة إضافية لاستكمال اعتماد لائحة دعم تملك المساكن لموظفيها من مجلس الإدارة', statusColor:'#e2a23c', updated:'2026-08-10'},
-              {company:'أرامكو', demand:0, status:'تمت الموافقة المبدئية على توقيع اتفاقية الشراكة، ويجري العمل على إنهاء الملاحظات تمهيداً لاستكمال إجراءات التوقيع', statusColor:'#8b5cf6', updated:'2026-08-08'},
-              {company:'سابك', demand:0, status:'تم اعتماد اللائحة الداخلية لدعم تملك المساكن، والشركة بصدد التعاقد مع بنوك محددة للتمويل، ومن المتوقع الانتهاء خلال شهر سبتمبر', statusColor:'#8b5cf6', updated:'2026-08-05'},
-              {company:'شركات أخرى', demand:394, status:'تحت الاجراء', statusColor:'#6f7f92', updated:'2026-08-20'}
-            ], total:777},
-            {project:'الجبيل الصناعية', totalLabel:'الاجمالي', rows:[
-              {company:'صدارة', demand:50, status:'تم اعتماد عدد 50 مستفيد جديد وسيتم البيع لهم خلال مركز المبيعات', statusColor:'#39a96b', updated:'2026-08-19'},
-              {company:'ساتورب', demand:260, status:'بانتظار رد الشركة للمستحقين والراغبين بالتملك وسيتم المتابعة معهم', statusColor:'#e2a23c', updated:'2026-08-17'},
-              {company:'معادن', demand:800, status:'تم تحديد موعد من قبل الشركة بإرسال الموظفين لمركز المبيعات بداية شهر سبتمبر', statusColor:'#2f78b8', updated:'2026-08-14'},
-              {company:'ساسرف', demand:140, status:'تمت مخاطبة الشركة بخصوص آلية الشراء المباشر بالمشروع وجاري أخذ الموافقات اللازمة من الإدارة', statusColor:'#e2a23c', updated:'2026-08-11'},
-              {company:'المتقدمة', demand:150, status:'تمت إفادتنا بأن جاري اعتماد الإدارة للائحة الدعم', statusColor:'#e2a23c', updated:'2026-08-09'},
-              {company:'تصنيع', demand:100, status:'تمت إفادتنا بأن جاري اعتماد الإدارة للائحة الدعم', statusColor:'#e2a23c', updated:'2026-08-07'},
-              {company:'أرامكو', demand:0, status:'تمت الموافقة المبدئية على توقيع اتفاقية الشراكة، ويجري العمل على إنهاء الملاحظات تمهيداً لاستكمال إجراءات التوقيع', statusColor:'#8b5cf6', updated:'2026-08-06'},
-              {company:'سابك', demand:0, status:'تم اعتماد اللائحة الداخلية لدعم تملك المساكن، والشركة بصدد التعاقد مع بنوك محددة للتمويل، ومن المتوقع الانتهاء خلال شهر سبتمبر', statusColor:'#8b5cf6', updated:'2026-08-04'}
-            ], total:1500}
-          ];
-          return SALES_UPDATES.map(function(proj){
-            return '<section class="ms-dashboard-card" style="margin-bottom:18px;cursor:default">'+
-              '<div class="ms-dashboard-card-head" style="background:linear-gradient(135deg,#1b3a5c,#2f78b8);height:auto;padding:14px 18px">'+
-                '<div class="ms-dashboard-card-title" style="color:#fff;font-size:16px">🏗️ تحديث المبيعات على الشركات بـ'+proj.project+'</div>'+
-                '<div style="color:#ffffffcc;font-size:12px">إجمالي الطلب المبدئي: <b style="color:#fff;font-size:15px">'+proj.total+'</b> وحدة</div>'+
-              '</div>'+
-              '<div class="ms-dashboard-card-body" style="padding:0;overflow-x:auto">'+
-                '<table class="ms-deadline-table" style="width:100%;min-width:700px"><thead><tr>'+
-                  '<th style="width:120px;background:#1b3a5c;color:#fff;padding:10px 14px;text-align:right">الشركة</th>'+
-                  '<th style="width:100px;background:#1b3a5c;color:#fff;padding:10px 14px;text-align:center">الطلب المبدئي</th>'+
-                  '<th style="background:#1b3a5c;color:#fff;padding:10px 14px;text-align:right">الحالة</th>'+
-                  '<th style="width:130px;background:#1b3a5c;color:#fff;padding:10px 14px;text-align:center">تاريخ التحديث</th>'+
-                '</tr></thead><tbody>'+
-                proj.rows.map(function(r,i){
-                  var bg=i%2===0?'#f8fafc':'#fff';
-                  return '<tr style="background:'+bg+'">'+
-                    '<td style="padding:10px 14px;font-weight:700;color:#1b3a5c;border-bottom:1px solid #e5e9ee">'+r.company+'</td>'+
-                    '<td style="padding:10px 14px;text-align:center;font-weight:700;color:#2f78b8;font-size:15px;border-bottom:1px solid #e5e9ee">'+(r.demand||'-')+'</td>'+
-                    '<td style="padding:10px 14px;font-size:12.5px;line-height:1.7;border-bottom:1px solid #e5e9ee"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+r.statusColor+';margin-left:6px;vertical-align:middle"></span>'+r.status+'</td>'+
-                    '<td style="padding:10px 14px;text-align:center;font-size:12px;color:#6f7f92;border-bottom:1px solid #e5e9ee"><span style="background:#e5e9ee;padding:3px 10px;border-radius:12px;font-weight:600;white-space:nowrap">'+r.updated+'</span></td>'+
-                  '</tr>';
-                }).join('')+
-                '<tr style="background:#d4a84220"><td style="padding:10px 14px;font-weight:800;color:#1b3a5c;font-size:14px">'+proj.totalLabel+'</td><td style="padding:10px 14px;text-align:center;font-weight:800;color:#39a96b;font-size:16px">'+proj.total+'</td><td colspan="2" style="padding:10px 14px"></td></tr>'+
-              '</tbody></table></div></section>';
-          }).join('');
-        }());
+        renderSalesUpdatesTables();
     });
   };
 
