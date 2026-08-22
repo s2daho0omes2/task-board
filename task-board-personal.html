@@ -66,88 +66,115 @@
 
   /* ===== Card ===== */
   .card{
-    background:var(--panel);border:1px solid var(--line);border-radius:16px;
-    display:flex;flex-direction:column;overflow:hidden;
-    transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-    width:370px; min-height:180px;
-    box-shadow:0 2px 8px rgba(0,0,0,.2), 0 8px 24px -12px rgba(0,0,0,.3);
+    background:var(--panel);border:none;border-radius:22px;
+    display:flex;flex-direction:column;overflow:visible;
+    transition:transform .35s cubic-bezier(.4,0,.2,1), box-shadow .35s ease;
+    width:380px; min-height:180px;
+    box-shadow:0 8px 32px rgba(0,0,0,.4);
+    position:relative;
   }
+  .card>*{overflow:hidden;}
   .grid-mode .card{ position:static !important; width:auto; }
   .free-mode .card{ position:absolute; z-index:1; }
-  .free-mode .card.dragging{ z-index:999; box-shadow:0 16px 48px rgba(0,0,0,.55); cursor:grabbing; transform:scale(1.02); }
-  .card:hover{border-color:#4a5568; transform:translateY(-2px); box-shadow:0 4px 16px rgba(0,0,0,.3), 0 12px 32px -12px rgba(0,0,0,.4);}
-  .card.stale{border-right:3px solid var(--amber)}
-  .card.done{opacity:.55}
+  .free-mode .card.dragging{ z-index:999; box-shadow:0 24px 64px rgba(0,0,0,.6); cursor:grabbing; transform:scale(1.04) rotate(-1deg); }
+  .card:hover{ transform:translateY(-6px) scale(1.01); box-shadow:0 16px 48px rgba(0,0,0,.5);}
+  .card.stale{}
+  .card.done{opacity:.4; filter:grayscale(.4)}
+
+  /* ===== Status ribbon (شريط الحالة الجانبي) ===== */
+  .card::before{
+    content:""; position:absolute; top:20px; right:-4px; width:8px; bottom:20px;
+    border-radius:4px; background:var(--accent); z-index:5;
+    box-shadow:0 0 14px rgba(79,157,255,.4);
+  }
+  .card.stale::before{background:var(--amber);box-shadow:0 0 14px rgba(210,153,34,.4)}
+  .card.done::before{background:var(--green);box-shadow:0 0 14px rgba(63,185,80,.3);opacity:.5}
+
+  /* ===== Status header bar ===== */
+  .card-status-bar{
+    padding:10px 20px; display:flex; align-items:center; justify-content:space-between;
+    font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.08em;
+    border-radius:22px 22px 0 0;
+  }
+  .card .badge.s-new ~ .card-status-bar, .s-new-bar{background:linear-gradient(135deg,#1a3a5c,#0d2240);color:#6cb6ff}
+  .s-doing-bar{background:linear-gradient(135deg,#2d1b4e,#1a1030);color:#c49bff}
+  .s-wait-bar{background:linear-gradient(135deg,#3d2e10,#2a1f08);color:#f5c842}
+  .s-done-bar{background:linear-gradient(135deg,#0f2e18,#0a1d10);color:#56d364}
 
   /* ===== تايمر التحديث ===== */
   .stale-timer{
     display:inline-flex;align-items:center;gap:5px;
-    font-size:11.5px;font-weight:700;padding:5px 12px;border-radius:999px;
-    backdrop-filter:blur(4px);
+    font-size:11px;font-weight:800;padding:6px 14px;border-radius:10px;
+    letter-spacing:.02em;
   }
-  .stale-timer.green{color:var(--green);border:1px solid #27502e;background:rgba(15,36,23,.8)}
-  .stale-timer.amber{color:var(--amber);border:1px solid #5c4a1d;background:rgba(42,34,16,.8)}
-  .stale-timer.red{color:var(--red);border:1px solid #5e2b28;background:rgba(42,20,20,.8);animation:pulse-red 2s infinite}
+  .stale-timer.green{color:#5cff8a;background:rgba(63,185,80,.12)}
+  .stale-timer.amber{color:#ffc44d;background:rgba(210,153,34,.12)}
+  .stale-timer.red{color:#ff6b6b;background:rgba(248,81,73,.15);animation:pulse-red 2s infinite}
 
-  .card-head{padding:16px 18px 12px;border-bottom:1px solid var(--line);cursor:grab; position:relative;}
+  .card-head{padding:18px 22px 14px;cursor:grab; position:relative;border-bottom:none;}
   .card-head:active{cursor:grabbing}
-  .row{display:flex;align-items:flex-start;gap:8px}
-  .title{font-weight:800;font-size:17px;flex:1;word-break:break-word;line-height:1.5;letter-spacing:-.01em}
-  .card.done .title{text-decoration:line-through;opacity:.7}
-  .desc{color:var(--muted);font-size:13px;margin-top:6px;white-space:pre-wrap;word-break:break-word;line-height:1.6}
-  .badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;align-items:center}
-  .badge{font-size:11px;padding:4px 10px;border-radius:8px;border:1px solid var(--line);color:var(--muted);font-weight:600;letter-spacing:.01em}
-  .badge.s-new{color:var(--accent);border-color:#2b4d7a;background:linear-gradient(135deg,#132132,#1a2d45)}
-  .badge.s-doing{color:var(--violet);border-color:#4b3a72;background:linear-gradient(135deg,#1d1730,#2a1f45)}
-  .badge.s-wait{color:var(--amber);border-color:#5c4a1d;background:linear-gradient(135deg,#2a2210,#3a2f15)}
-  .badge.s-done{color:var(--green);border-color:#27502e;background:linear-gradient(135deg,#0f2417,#153320)}
-  .badge.p-high{color:var(--red);border-color:#5e2b28;background:linear-gradient(135deg,#2a1414,#3a1a1a)}
-  .badge.today{color:var(--green);border-color:#27502e;background:#0f2417}
+  .row{display:flex;align-items:flex-start;gap:10px}
+  .title{font-weight:900;font-size:18px;flex:1;word-break:break-word;line-height:1.5;letter-spacing:-.02em;color:#fff}
+  .card.done .title{text-decoration:line-through;opacity:.5}
+  .desc{color:var(--muted);font-size:13px;margin-top:8px;white-space:pre-wrap;word-break:break-word;line-height:1.65;opacity:.7}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center}
+  .badge{
+    font-size:10.5px;padding:6px 14px;border-radius:10px;border:none;font-weight:700;letter-spacing:.03em;
+    background:rgba(255,255,255,.05); color:var(--muted);
+  }
+  .badge.s-new{color:#6cb6ff;background:rgba(79,157,255,.12)}
+  .badge.s-doing{color:#c49bff;background:rgba(163,113,247,.12)}
+  .badge.s-wait{color:#f5c842;background:rgba(210,153,34,.12)}
+  .badge.s-done{color:#56d364;background:rgba(63,185,80,.12)}
+  .badge.p-high{color:#ff7b72;background:rgba(248,81,73,.15);animation:pulse-red 3s infinite}
+  .badge.today{color:#56d364;background:rgba(63,185,80,.1)}
 
   /* ===== Color stripe ===== */
-  .card[data-color]{ border-top:4px solid transparent; }
+  .card[data-color]{ border-top:none; }
 
-  .updates{padding:10px 18px 6px;flex:1;max-height:340px;overflow:auto}
-  .empty-u{color:var(--muted);font-size:13px;padding:12px 0;text-align:center;opacity:.7}
+  /* ===== Divider ===== */
+  .card-divider{height:1px;margin:0 22px;background:linear-gradient(90deg,transparent,var(--line),transparent)}
+
+  .updates{padding:14px 22px 8px;flex:1;max-height:340px;overflow:auto}
+  .empty-u{color:var(--muted);font-size:13px;padding:16px 0;text-align:center;opacity:.5}
   .u{
-    position:relative;padding:10px 18px 10px 6px;border-right:2px solid var(--line);
-    margin-right:6px; transition:background .15s;
+    position:relative;padding:12px 0;
+    margin-right:0; transition:all .2s; border-right:none;
   }
-  .u:hover{background:rgba(255,255,255,.02);border-radius:0 8px 8px 0}
-  .u::before{
-    content:"";position:absolute;right:-7px;top:16px;width:10px;height:10px;border-radius:50%;
-    background:var(--line);border:2px solid var(--panel);transition:all .15s;
-  }
-  .u.is-today::before{background:var(--green);box-shadow:0 0 6px rgba(63,185,80,.4)}
-  .u-meta{font-size:11px;color:var(--muted);display:flex;gap:8px;align-items:center;opacity:.8}
-  .u-text{white-space:pre-wrap;word-break:break-word;font-size:14px;margin-top:3px;line-height:1.65}
+  .u+.u{border-top:1px solid rgba(255,255,255,.04)}
+  .u:hover{background:rgba(255,255,255,.02);border-radius:10px;margin:0 -8px;padding:12px 8px}
+  .u::before{display:none}
+  .u.is-today::before{display:none}
+  .u-meta{font-size:10.5px;color:var(--muted);display:flex;gap:8px;align-items:center;opacity:.6}
+  .u-text{white-space:pre-wrap;word-break:break-word;font-size:14.5px;margin-top:5px;line-height:1.7;color:rgba(230,237,243,.85)}
 
   /* === آخر تحديث بارز === */
   .u.is-latest{
-    background:rgba(79,157,255,.06); border-radius:12px; padding:14px 18px 14px 10px;
-    border-right:3px solid var(--accent); margin-bottom:8px;
-    box-shadow:0 2px 8px rgba(79,157,255,.08);
+    background:linear-gradient(135deg, rgba(79,157,255,.1), rgba(47,111,208,.04));
+    border-radius:14px; padding:16px 18px;
+    border-right:none; margin:-4px -8px 8px; border-top:none;
+    border:1px solid rgba(79,157,255,.12);
   }
   .u.is-latest .u-text{
-    font-size:17px; font-weight:700; color:#fff; line-height:1.65;
+    font-size:17.5px; font-weight:800; color:#fff; line-height:1.7;
   }
-  .u.is-latest::before{ background:var(--accent); width:12px; height:12px; box-shadow:0 0 8px rgba(79,157,255,.5); }
+  .u.is-latest::before{display:none}
 
-  .u .del{visibility:hidden;background:none;border:none;color:var(--muted);padding:0 4px;font-size:12px;transition:color .15s}
+  .u .del{visibility:hidden;background:none;border:none;color:var(--muted);padding:4px 8px;font-size:12px;transition:all .15s;border-radius:8px}
   .u:hover .del{visibility:visible}
-  .u .del:hover{color:var(--red)}
-  .more{background:none;border:none;color:var(--accent);font-size:13px;padding:8px 4px;font-weight:600}
-  .more:hover{text-decoration:underline}
+  .u .del:hover{color:var(--red);background:rgba(248,81,73,.1)}
+  .more{background:rgba(79,157,255,.08);border:none;color:var(--accent);font-size:12px;padding:8px 16px;font-weight:700;border-radius:10px;margin:4px 0;transition:all .2s}
+  .more:hover{background:rgba(79,157,255,.15)}
 
-  .card-foot{padding:12px 18px 16px;border-top:1px solid var(--line);background:var(--panel-2)}
+  .card-foot{padding:16px 22px 20px;background:rgba(22,27,34,.5)}
   .card-foot textarea{
-    width:100%;min-height:44px;max-height:160px;resize:vertical;padding:10px 13px;
-    background:var(--panel);border:1px solid var(--line);border-radius:12px;outline:none;
-    transition:border-color .2s, box-shadow .2s;
+    width:100%;min-height:50px;max-height:160px;resize:vertical;padding:13px 16px;
+    background:var(--bg);border:2px solid var(--line);border-radius:14px;outline:none;
+    transition:all .3s ease; font-size:14px;
   }
-  .card-foot textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,157,255,.15)}
-  .foot-row{display:flex;gap:8px;align-items:center;margin-top:10px}
-  .hint{color:var(--muted);font-size:11px;opacity:.6}
+  .card-foot textarea:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(79,157,255,.1)}
+  .foot-row{display:flex;gap:8px;align-items:center;margin-top:12px}
+  .hint{color:var(--muted);font-size:11px;opacity:.35}
 
   .empty{
     text-align:center;padding:70px 20px;color:var(--muted);
@@ -209,16 +236,20 @@
 
   /* ===== أرشيف ===== */
   .archive-card{
-    background:var(--panel);border:1px solid var(--line);border-radius:16px;
-    min-width:300px;max-width:340px;flex-shrink:0;padding:18px;opacity:.6;
-    transition:all .2s ease;
-    box-shadow:0 1px 4px rgba(0,0,0,.15);
+    background:linear-gradient(145deg, rgba(30,37,48,.8), rgba(22,27,34,.9));
+    border:1px solid rgba(255,255,255,.04);border-radius:20px;
+    min-width:300px;max-width:340px;flex-shrink:0;padding:20px;opacity:.45;
+    transition:all .3s cubic-bezier(.4,0,.2,1);
+    box-shadow:0 2px 12px rgba(0,0,0,.2);
+    backdrop-filter:blur(8px);
   }
-  .archive-card:hover{opacity:1;border-color:#4a5568;transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.25)}
+  .archive-card:hover{opacity:1;border-color:rgba(86,211,100,.2);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.3), 0 0 16px rgba(86,211,100,.05)}
   .archive-card .title{font-weight:800;font-size:15px;text-decoration:line-through;color:var(--muted)}
-  .archive-card .a-meta{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6}
-  .archive-card .a-last{font-size:13px;margin-top:8px;color:var(--text);opacity:.8;line-height:1.5}
-  @keyframes pulse-red{0%,100%{opacity:1}50%{opacity:.55}}
+  .archive-card .a-meta{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6;opacity:.7}
+  .archive-card .a-last{font-size:13px;margin-top:8px;color:var(--text);opacity:.7;line-height:1.6}
+  @keyframes pulse-red{0%,100%{opacity:1}50%{opacity:.45}}
+  @keyframes card-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .card{animation:card-in .4s ease backwards}
   @media(max-width:600px){ .grid-mode .canvas{grid-template-columns:1fr} .two{grid-template-columns:1fr} .card{width:100%} }
 </style>
 </head>
@@ -607,20 +638,27 @@ function render(){
     }).join("")
     : `<div class="empty-u">لا توجد تحديثات بعد — اكتب أول تحديث بالأسفل.</div>`;
 
+    const statusColors = {new:'#6cb6ff',doing:'#c49bff',wait:'#f5c842',done:'#56d364'};
+    const statusBarCls = {new:'s-new-bar',doing:'s-doing-bar',wait:'s-wait-bar',done:'s-done-bar'};
+    const statusEmoji = {new:'🆕',doing:'⚡',wait:'⏸️',done:'✅'};
+
     return `
-    <div class="card ${t.status==="done"?"done":""} ${isStale(t)?"stale":""}" data-id="${t.id}" style="${colorStyle}${posStyle}">
+    <div class="card ${t.status==="done"?"done":""} ${isStale(t)?"stale":""}" data-id="${t.id}" style="${posStyle}${safeColor?'--card-color:'+safeColor+';':''}">
+      <div class="card-status-bar ${statusBarCls[t.status]||'s-new-bar'}" data-drag="${t.id}">
+        <span>${statusEmoji[t.status]||''} ${STATUS[t.status]}</span>
+        <span style="opacity:.5">${t.num?'#'+t.num:''}</span>
+      </div>
       <div class="card-head" data-drag="${t.id}">
         <div class="row">
-          <div class="title">${t.num?'<span style="background:#30363d;color:#8b949e;border-radius:4px;padding:0 5px;margin-left:6px;font-size:.75em">#'+t.num+'</span>':''}${esc(t.title)}</div>
-          <button class="btn sm ghost" data-edit="${t.id}" title="تعديل">✎</button>
+          <div class="title">${esc(t.title)}</div>
+          <button class="btn sm ghost" data-edit="${t.id}" title="تعديل" style="opacity:.5;font-size:18px">✎</button>
         </div>
         ${t.desc?`<div class="desc">${esc(t.desc)}</div>`:""}
         <div class="badges">
-          <span class="badge s-${t.status}">${STATUS[t.status]}</span>
-          ${t.assignee?`<span class="badge" style="color:var(--accent);border-color:#2b4d7a;background:#132132">👤 ${esc(t.assignee)}</span>`:""}
-          ${t.priority==="high"?'<span class="badge p-high">أولوية عالية</span>':""}
-          <span class="badge">${(t.updates||[]).length} تحديث</span>
-          <span class="badge">آخر نشاط: ${rel(lastAt(t))}</span>
+          ${t.assignee?`<span class="badge" style="color:#8cc8ff;background:rgba(79,157,255,.1)">👤 ${esc(t.assignee)}</span>`:""}
+          ${t.priority==="high"?'<span class="badge p-high">🔥 أولوية عالية</span>':""}
+          <span class="badge">📝 ${(t.updates||[]).length} تحديث</span>
+          <span class="badge">🕐 ${rel(lastAt(t))}</span>
           ${t.status!=="done"?(()=>{
             const now=new Date(); now.setHours(0,0,0,0);
             const last=new Date(lastAt(t)); last.setHours(0,0,0,0);
@@ -643,6 +681,7 @@ function render(){
           })():""}
         </div>
       </div>
+      <div class="card-divider"></div>
       <div class="updates">
         ${upsHtml}
         ${hidden>0?`<button class="more" data-more="${t.id}">عرض ${hidden} تحديث أقدم ▾</button>`:""}
