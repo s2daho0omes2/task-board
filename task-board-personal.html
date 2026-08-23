@@ -251,7 +251,73 @@
   @keyframes card-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
   #grid{min-height:200px}
   .card{}
-  @media(max-width:600px){ .grid-mode .canvas{grid-template-columns:1fr} .two{grid-template-columns:1fr} .card{width:100%} }
+  /* ===== Alert bar (تنبيهات المهام المتأخرة) ===== */
+  .alert-bar{
+    background:linear-gradient(135deg,#2a1414,#1a0a0a);border:1px solid #5e2b28;
+    border-radius:14px;margin:12px 18px 0;padding:14px 20px;display:none;
+  }
+  .alert-bar.show{display:block}
+  .alert-bar h4{margin:0 0 8px;color:#ff7b72;font-size:14px}
+  .alert-bar ul{margin:0;padding:0 18px;list-style:none}
+  .alert-bar li{color:#ffb3b0;font-size:13px;padding:3px 0;line-height:1.6}
+  .alert-bar li::before{content:"🔴 ";font-size:11px}
+  .alert-bar .dismiss-alert{background:none;border:none;color:var(--muted);font-size:18px;float:left;cursor:pointer;padding:0 4px}
+
+  /* ===== Dashboard (إحصائيات) ===== */
+  .dashboard{
+    display:none;margin:12px 18px 0;padding:20px;
+    background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  }
+  .dashboard.show{display:block}
+  .dash-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .dash-header h3{margin:0;font-size:16px;color:var(--text)}
+  .dash-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+  .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px}
+  .dash-card{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:12px;
+    padding:16px;text-align:center;
+  }
+  .dash-card .num{font-size:28px;font-weight:900;line-height:1.2}
+  .dash-card .lbl{font-size:11px;color:var(--muted);margin-top:4px}
+  .dash-bar-row{display:flex;align-items:center;gap:10px;margin:6px 0}
+  .dash-bar-label{font-size:12px;color:var(--muted);min-width:80px;text-align:left}
+  .dash-bar-track{flex:1;height:22px;background:var(--panel-2);border-radius:11px;overflow:hidden;position:relative}
+  .dash-bar-fill{height:100%;border-radius:11px;transition:width .5s ease}
+  .dash-bar-val{font-size:11px;font-weight:700;min-width:30px;text-align:right}
+  .dash-section-title{font-size:13px;color:var(--muted);margin:16px 0 8px;font-weight:700}
+  .dash-person-row{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px}
+  .dash-person-row .name{flex:1;color:var(--text)}
+  .dash-person-row .count{color:var(--accent);font-weight:700}
+  .dash-week{display:flex;gap:4px;align-items:flex-end;height:60px;margin-top:8px}
+  .dash-week-bar{flex:1;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px;transition:height .5s ease;position:relative}
+  .dash-week-bar .tip{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted);white-space:nowrap}
+  .dash-week-labels{display:flex;gap:4px;margin-top:4px}
+  .dash-week-labels span{flex:1;text-align:center;font-size:10px;color:var(--muted)}
+
+  /* ===== Quick AI buttons ===== */
+  .quick-ai-bar{display:flex;gap:8px;flex-wrap:wrap;padding:0 18px;margin-top:10px}
+  .quick-ai-btn{
+    padding:8px 16px;border-radius:12px;border:1px solid var(--line);
+    background:linear-gradient(135deg,var(--panel),var(--panel-2));color:var(--text);
+    font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;
+    display:flex;align-items:center;gap:6px;
+  }
+  .quick-ai-btn:hover{border-color:var(--accent);background:rgba(79,157,255,.1);transform:translateY(-1px)}
+  .quick-ai-btn:disabled{opacity:.5;pointer-events:none}
+
+  /* ===== AI Quick Result panel ===== */
+  .ai-quick-panel{
+    display:none;margin:12px 18px 0;padding:20px;
+    background:linear-gradient(135deg,#0d1520,#111827);border:1px solid var(--line);border-radius:16px;
+    position:relative;
+  }
+  .ai-quick-panel.show{display:block}
+  .ai-quick-panel h4{margin:0 0 10px;font-size:15px;color:var(--accent)}
+  .ai-quick-panel .result{white-space:pre-wrap;font-size:14px;line-height:1.8;max-height:50vh;overflow:auto}
+  .ai-quick-panel .close-panel{position:absolute;top:12px;left:12px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+  .ai-quick-panel .loading{color:var(--muted);font-size:14px}
+
+  @media(max-width:600px){ .grid-mode .canvas{grid-template-columns:1fr} .two{grid-template-columns:1fr} .card{width:100%} .dash-grid{grid-template-columns:repeat(2,1fr)} }
 </style>
 </head>
 <body>
@@ -279,9 +345,47 @@
     <button class="tab" data-f="wait">معلّقة</button>
     <button class="tab" data-f="stale">تحتاج تحديث</button>
   </div>
+  <button class="btn sm" id="btnDash" title="إحصائيات">📊</button>
   <select id="filterAssignee" style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;color:var(--text);font-size:13px;cursor:pointer">
     <option value="">كل المسؤولين</option>
   </select>
+</div>
+
+<!-- شريط التنبيهات -->
+<div class="alert-bar" id="alertBar">
+  <button class="dismiss-alert" id="dismissAlert">✕</button>
+  <h4>⚠️ مهام تحتاج انتباهك</h4>
+  <ul id="alertList"></ul>
+</div>
+
+<!-- داشبورد الإحصائيات -->
+<div class="dashboard" id="dashboard">
+  <div class="dash-header">
+    <h3>📊 لوحة الإحصائيات</h3>
+    <button class="dash-close" id="dashClose">✕</button>
+  </div>
+  <div class="dash-grid" id="dashCards"></div>
+  <div class="dash-section-title">توزيع الحالات</div>
+  <div id="dashBars"></div>
+  <div class="dash-section-title">نشاط آخر 7 أيام</div>
+  <div class="dash-week" id="dashWeek"></div>
+  <div class="dash-week-labels" id="dashWeekLabels"></div>
+  <div class="dash-section-title">المسؤولين الأكثر مهاماً</div>
+  <div id="dashPeople"></div>
+</div>
+
+<!-- أزرار الذكاء الاصطناعي السريعة -->
+<div class="quick-ai-bar" id="quickAiBar">
+  <button class="quick-ai-btn" id="qaiSummary">📋 ملخص يومي</button>
+  <button class="quick-ai-btn" id="qaiPriority">🎯 رتب أولوياتي</button>
+  <button class="quick-ai-btn" id="qaiStale">🚨 المتأخرة</button>
+</div>
+
+<!-- نتيجة الذكاء الاصطناعي السريعة -->
+<div class="ai-quick-panel" id="aiQuickPanel">
+  <button class="close-panel" id="closeQuickPanel">✕</button>
+  <h4 id="aiQuickTitle">📋 ملخص يومي</h4>
+  <div class="result" id="aiQuickResult"></div>
 </div>
 
 <main id="main" class="free-mode"><div class="canvas" id="grid"></div></main>
@@ -736,6 +840,9 @@ function render(){
   } else {
     archSec.style.display = "none";
   }
+  // update alerts
+  updateAlerts();
+  if(dashOpen) buildDashboard();
 }
 
 /* ================= السحب (Drag) ================= */
@@ -1138,9 +1245,185 @@ if(useFirebase){
   });
 } /* end useFirebase */
 
+/* ================= 1. تنبيهات المهام المتأخرة ================= */
+let alertDismissed = false;
+function updateAlerts(){
+  if(alertDismissed) return;
+  const now = Date.now();
+  const stale = tasks.filter(t=>t&&t.status!=="done"&&(now-lastAt(t))>3*DAY);
+  const overdue = tasks.filter(t=>{
+    if(!t||!t.deadline||t.status==="done") return false;
+    const dl=new Date(t.deadline); dl.setHours(0,0,0,0);
+    return dl.getTime() < new Date().setHours(0,0,0,0);
+  });
+  const alerts = [];
+  overdue.forEach(t=>alerts.push(`<b>${esc(t.title)}</b> — فات الموعد النهائي!`));
+  stale.sort((a,b)=>lastAt(a)-lastAt(b)).slice(0,5).forEach(t=>{
+    const days=Math.round((now-lastAt(t))/DAY);
+    alerts.push(`<b>${esc(t.title)}</b> — ${days} يوم بدون تحديث`);
+  });
+  const bar=$("#alertBar"), list=$("#alertList");
+  if(alerts.length){
+    list.innerHTML=alerts.map(a=>`<li>${a}</li>`).join("");
+    bar.classList.add("show");
+  } else {
+    bar.classList.remove("show");
+  }
+}
+$("#dismissAlert").onclick=()=>{ alertDismissed=true; $("#alertBar").classList.remove("show"); };
+
+/* ================= 2. داشبورد الإحصائيات ================= */
+function buildDashboard(){
+  const total=tasks.length;
+  const byStatus={new:0,doing:0,wait:0,done:0};
+  tasks.forEach(t=>{ if(t&&byStatus.hasOwnProperty(t.status)) byStatus[t.status]++; });
+  const open=total-byStatus.done;
+  const todayUps=tasks.reduce((n,t)=>n+(t&&t.updates?t.updates.filter(u=>isToday(u.at)).length:0),0);
+  const staleCount=tasks.filter(t=>t&&isStale(t)).length;
+  const completionRate=total?Math.round((byStatus.done/total)*100):0;
+
+  // Cards
+  $("#dashCards").innerHTML=[
+    {num:total,lbl:"إجمالي المهام",color:"var(--accent)"},
+    {num:open,lbl:"مفتوحة",color:"var(--amber)"},
+    {num:byStatus.done,lbl:"مكتملة",color:"var(--green)"},
+    {num:todayUps,lbl:"تحديثات اليوم",color:"var(--violet)"},
+    {num:staleCount,lbl:"متأخرة",color:"var(--red)"},
+    {num:completionRate+"%",lbl:"نسبة الإنجاز",color:"var(--green)"},
+  ].map(c=>`<div class="dash-card"><div class="num" style="color:${c.color}">${c.num}</div><div class="lbl">${c.lbl}</div></div>`).join("");
+
+  // Status bars
+  const maxStatus=Math.max(1,...Object.values(byStatus));
+  const statusNames={new:"جديدة",doing:"قيد التنفيذ",wait:"معلّقة",done:"مكتملة"};
+  const statusClrs={new:"#6cb6ff",doing:"#c49bff",wait:"#f5c842",done:"#56d364"};
+  $("#dashBars").innerHTML=Object.entries(byStatus).map(([k,v])=>`
+    <div class="dash-bar-row">
+      <span class="dash-bar-label">${statusNames[k]}</span>
+      <div class="dash-bar-track"><div class="dash-bar-fill" style="width:${(v/maxStatus)*100}%;background:${statusClrs[k]}"></div></div>
+      <span class="dash-bar-val" style="color:${statusClrs[k]}">${v}</span>
+    </div>`).join("");
+
+  // Weekly activity (last 7 days)
+  const dayNames=["أحد","إثن","ثلا","أربع","خمي","جمع","سبت"];
+  const now=new Date(); now.setHours(0,0,0,0);
+  const week=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(now.getTime()-i*DAY);
+    const count=tasks.reduce((n,t)=>n+(t&&t.updates?t.updates.filter(u=>{
+      const ud=new Date(u.at); ud.setHours(0,0,0,0);
+      return ud.getTime()===d.getTime();
+    }).length:0),0);
+    week.push({day:dayNames[d.getDay()],count});
+  }
+  const maxW=Math.max(1,...week.map(w=>w.count));
+  $("#dashWeek").innerHTML=week.map(w=>
+    `<div class="dash-week-bar" style="height:${Math.max(4,(w.count/maxW)*56)}px"><span class="tip">${w.count}</span></div>`
+  ).join("");
+  $("#dashWeekLabels").innerHTML=week.map(w=>`<span>${w.day}</span>`).join("");
+
+  // People
+  const pMap={};
+  tasks.filter(t=>t&&t.assignee&&t.status!=="done").forEach(t=>{pMap[t.assignee]=(pMap[t.assignee]||0)+1;});
+  const sorted=Object.entries(pMap).sort((a,b)=>b[1]-a[1]);
+  $("#dashPeople").innerHTML=sorted.length?sorted.map(([name,count])=>
+    `<div class="dash-person-row"><span class="name">👤 ${esc(name)}</span><span class="count">${count} مهمة</span></div>`
+  ).join(""):'<div style="color:var(--muted);font-size:13px">لا يوجد مسؤولين معيّنين</div>';
+}
+
+let dashOpen=false;
+$("#btnDash").onclick=()=>{
+  dashOpen=!dashOpen;
+  if(dashOpen) buildDashboard();
+  $("#dashboard").classList.toggle("show",dashOpen);
+};
+$("#dashClose").onclick=()=>{ dashOpen=false; $("#dashboard").classList.remove("show"); };
+
+/* ================= 3. أزرار الذكاء الاصطناعي السريعة ================= */
+async function quickAI(title, prompt){
+  const c=cfg();
+  const key=c.claude_key||c.openai_key||"";
+  const model=c.claude_model||"claude-haiku-4-5";
+  const prov=c.lastProvider||"claude";
+  if(!key){
+    toast("⚠️ أدخل مفتاح API أولاً من زر ✨");
+    $("#aiModal").classList.add("open");
+    return;
+  }
+  const panel=$("#aiQuickPanel");
+  const result=$("#aiQuickResult");
+  $("#aiQuickTitle").textContent=title;
+  result.innerHTML='<div class="loading">⏳ جارٍ التحليل...</div>';
+  panel.classList.add("show");
+
+  // Disable buttons
+  document.querySelectorAll(".quick-ai-btn").forEach(b=>b.disabled=true);
+
+  const sys="أنت مساعد مدير مشاريع محترف. أجب بالعربية فقط. لا مقدمات ولا خاتمة — ابدأ مباشرة. استخدم الإيموجي للوضوح. التاريخ الآن: "+fmt(Date.now())+".";
+  const userMsg=prompt+"\n\n=== بيانات اللوحة ("+tasks.length+" مهمة) ===\n"+boardText();
+
+  try{
+    let text;
+    if(prov==="claude"){
+      text = await callClaude(c.claude_key||key, c.claude_model||model, sys, userMsg);
+    } else {
+      const base = c[prov+"_base"]||"https://api.openai.com/v1";
+      text = await callOpenAI(base, c[prov+"_key"]||key, c[prov+"_model"]||model, sys, userMsg);
+    }
+    result.textContent=text;
+  }catch(err){
+    result.textContent="❌ خطأ: "+err.message;
+  }
+  document.querySelectorAll(".quick-ai-btn").forEach(b=>b.disabled=false);
+}
+
+// ملخص يومي
+$("#qaiSummary").onclick=()=>quickAI("📋 ملخص يومي",
+  `أعطني ملخص يومي مختصر ومفيد:
+
+1. 📊 نظرة سريعة: سطر واحد بالأرقام (مفتوحة، قيد التنفيذ، معلقة، مكتملة)
+2. ✅ إنجازات اليوم: المهام اللي اتحدثت اليوم (إذا فيه)
+3. ⚡ الأولى بالتنفيذ: أهم 3 مهام يبدأ فيها اليوم ولماذا
+4. ⚠️ تحذيرات: مهام متأخرة أو فاتها الموعد
+5. 💡 نصيحة اليوم: نصيحة عملية وحدة تساعد بالإنتاجية
+
+اجعل الملخص قصير ومباشر — أقل من 15 سطر.`);
+
+// اقتراح أولويات
+$("#qaiPriority").onclick=()=>quickAI("🎯 ترتيب الأولويات",
+  `رتب لي كل المهام الغير مكتملة حسب الأولوية من الأهم للأقل:
+
+المعايير:
+- المهام اللي فاتها الموعد النهائي = أولوية قصوى
+- المهام اللي ما تحدثت من فترة طويلة = أولوية عالية
+- المهام قيد التنفيذ قبل الجديدة
+- المهام المعلقة اللي تحتاج متابعة
+
+لكل مهمة اكتب:
+رقم. ⭐⭐⭐ (1-5 نجوم) اسم المهمة
+   ↳ السبب | ⏰ آخر تحديث | 📌 الإجراء المطلوب
+
+في النهاية اكتب خطة مقترحة: "ابدأ بـ___، ثم ___، وأجّل ___"`);
+
+// تنبيه المتأخرة
+$("#qaiStale").onclick=()=>quickAI("🚨 تحليل المهام المتأخرة",
+  `حلل المهام المتأخرة (اللي ما تحدثت من فترة) والمهام اللي فاتها الموعد النهائي:
+
+1. 🔴 حرجة: مهام فاتها الموعد أو متأخرة أكثر من 5 أيام
+2. 🟡 تحتاج انتباه: متأخرة 2-5 أيام
+3. 🟢 وضعها مقبول: اتحدثت خلال يومين
+
+لكل مهمة حرجة اقترح:
+- هل نتابعها، نلغيها، أو نفوّضها؟
+- وش الخطوة الأولى؟
+
+في النهاية: كم مهمة بخير وكم تحتاج تدخل فوري؟`);
+
+$("#closeQuickPanel").onclick=()=>$("#aiQuickPanel").classList.remove("show");
+
 /* ================= تشغيل ================= */
 populateAssigneeSelects();
 render();
+updateAlerts();
 window.addEventListener("beforeunload",save);
 })();
 </script>
