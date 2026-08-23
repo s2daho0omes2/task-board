@@ -6,9 +6,9 @@
 <title>لوحة المهام والتحديثات</title>
 <style>
   :root{
-    --bg:#f0f2f5; --panel:#ffffff; --panel-2:#f7f8fa; --line:#e2e6ec;
-    --text:#1a1a2e; --muted:#6b7280; --accent:#2563eb; --accent-2:#1d4ed8;
-    --green:#16a34a; --amber:#d97706; --red:#dc2626; --violet:#7c3aed;
+    --bg:#0e1116; --panel:#161b22; --panel-2:#1c232c; --line:#2a323d;
+    --text:#e6edf3; --muted:#8b949e; --accent:#4f9dff; --accent-2:#2f6fd0;
+    --green:#3fb950; --amber:#d29922; --red:#f85149; --violet:#a371f7;
     --radius:14px;
   }
   *{box-sizing:border-box}
@@ -24,9 +24,8 @@
 
   /* ===== Header ===== */
   header{
-    position:sticky; top:0; z-index:50; backdrop-filter:blur(12px);
-    background:rgba(255,255,255,.85); border-bottom:1px solid var(--line);
-    box-shadow:0 1px 3px rgba(0,0,0,.06);
+    position:sticky; top:0; z-index:50; backdrop-filter:blur(8px);
+    background:rgba(14,17,22,.85); border-bottom:1px solid var(--line);
   }
   .head-wrap{max-width:100%;margin:0 auto;padding:14px 18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
   .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px}
@@ -34,12 +33,12 @@
   .stats{color:var(--muted);font-size:13px}
   .spacer{flex:1}
   .btn{
-    background:var(--panel); border:1px solid var(--line); color:var(--text);
+    background:var(--panel-2); border:1px solid var(--line); color:var(--text);
     padding:8px 14px; border-radius:10px; transition:.15s; white-space:nowrap;
   }
-  .btn:hover{border-color:var(--accent);background:#e8f0fe}
-  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-  .btn.primary:hover{background:var(--accent-2)}
+  .btn:hover{border-color:var(--accent);background:#222b36}
+  .btn.primary{background:var(--accent-2);border-color:var(--accent-2)}
+  .btn.primary:hover{background:var(--accent)}
   .btn.ghost{background:transparent}
   .btn.sm{padding:4px 10px;font-size:13px;border-radius:8px}
   .btn.danger:hover{border-color:var(--red);color:var(--red)}
@@ -48,14 +47,14 @@
   .toolbar{padding:16px 18px 4px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   .search{flex:1;min-width:220px;position:relative}
   .search input{
-    width:100%;padding:10px 38px 10px 12px;background:#fff;
-    border:2px solid var(--line);border-radius:12px;outline:none;color:var(--text);
+    width:100%;padding:10px 38px 10px 12px;background:var(--panel);
+    border:1px solid var(--line);border-radius:10px;outline:none;
   }
   .search input:focus{border-color:var(--accent)}
   .search::before{content:"🔍";position:absolute;right:12px;top:9px;opacity:.6}
   .tabs{display:flex;gap:6px;flex-wrap:wrap}
-  .tab{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-size:13px;cursor:pointer;color:var(--muted);font-weight:600}
-  .tab.active{background:var(--accent);border-color:var(--accent);font-weight:700;color:#fff}
+  .tab{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-size:13px;cursor:pointer}
+  .tab.active{background:var(--accent-2);border-color:var(--accent-2);font-weight:600}
 
   /* ===== Canvas (free drag area) ===== */
   .canvas{
@@ -71,25 +70,25 @@
     display:flex;flex-direction:column;overflow:visible;
     transition:transform .3s cubic-bezier(.4,0,.2,1), box-shadow .3s ease;
     width:380px; min-height:180px;
-    box-shadow:0 2px 4px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.08);
+    box-shadow:0 8px 32px rgba(0,0,0,.4);
     position:relative;
   }
   .card>*{overflow:hidden;}
   .grid-mode .card{ position:static !important; width:auto; }
   .free-mode .card{ position:absolute; z-index:1; }
-  .free-mode .card.dragging{ z-index:999; box-shadow:0 20px 50px rgba(0,0,0,.18); cursor:grabbing; transform:scale(1.03) rotate(-1deg); }
-  .card:hover{ transform:translateY(-5px); box-shadow:0 12px 36px rgba(0,0,0,.12);}
+  .free-mode .card.dragging{ z-index:999; box-shadow:0 24px 64px rgba(0,0,0,.6); cursor:grabbing; transform:scale(1.03) rotate(-1deg); }
+  .card:hover{ transform:translateY(-5px); box-shadow:0 16px 48px rgba(0,0,0,.5);}
   .card.stale{}
-  .card.done{opacity:.5; filter:grayscale(.3)}
+  .card.done{opacity:.4; filter:grayscale(.4)}
 
   /* ===== Status ribbon (شريط الحالة الجانبي) ===== */
   .card::before{
     content:""; position:absolute; top:16px; right:-5px; width:10px; bottom:16px;
     border-radius:5px; background:var(--accent); z-index:5;
-    box-shadow:0 2px 8px rgba(37,99,235,.3);
+    box-shadow:0 0 14px rgba(79,157,255,.4);
   }
-  .card.stale::before{background:var(--amber);box-shadow:0 2px 8px rgba(217,119,6,.3)}
-  .card.done::before{background:var(--green);box-shadow:0 2px 8px rgba(22,163,74,.2);opacity:.6}
+  .card.stale::before{background:var(--amber);box-shadow:0 0 14px rgba(210,153,34,.4)}
+  .card.done::before{background:var(--green);box-shadow:0 0 14px rgba(63,185,80,.3);opacity:.5}
 
   /* ===== Status header bar ===== */
   .card-status-bar{
@@ -97,10 +96,10 @@
     font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.06em;
     border-radius:20px 20px 0 0;
   }
-  .s-new-bar{background:linear-gradient(135deg,#dbeafe,#eff6ff);color:#1d4ed8}
-  .s-doing-bar{background:linear-gradient(135deg,#ede9fe,#f5f3ff);color:#6d28d9}
-  .s-wait-bar{background:linear-gradient(135deg,#fef3c7,#fffbeb);color:#b45309}
-  .s-done-bar{background:linear-gradient(135deg,#dcfce7,#f0fdf4);color:#15803d}
+  .s-new-bar{background:linear-gradient(135deg,#1a3a5c,#0d2240);color:#6cb6ff}
+  .s-doing-bar{background:linear-gradient(135deg,#2d1b4e,#1a1030);color:#c49bff}
+  .s-wait-bar{background:linear-gradient(135deg,#3d2e10,#2a1f08);color:#f5c842}
+  .s-done-bar{background:linear-gradient(135deg,#0f2e18,#0a1d10);color:#56d364}
 
   /* ===== تايمر التحديث ===== */
   .stale-timer{
@@ -108,27 +107,27 @@
     font-size:11px;font-weight:800;padding:6px 14px;border-radius:10px;
     letter-spacing:.02em;
   }
-  .stale-timer.green{color:#15803d;background:#dcfce7}
-  .stale-timer.amber{color:#b45309;background:#fef3c7}
-  .stale-timer.red{color:#dc2626;background:#fee2e2;animation:pulse-red 2s infinite}
+  .stale-timer.green{color:#5cff8a;background:rgba(63,185,80,.12)}
+  .stale-timer.amber{color:#ffc44d;background:rgba(210,153,34,.12)}
+  .stale-timer.red{color:#ff6b6b;background:rgba(248,81,73,.15);animation:pulse-red 2s infinite}
 
   .card-head{padding:20px 22px 14px;cursor:grab; position:relative;border-bottom:none;}
   .card-head:active{cursor:grabbing}
   .row{display:flex;align-items:flex-start;gap:10px}
-  .title{font-weight:900;font-size:18px;flex:1;word-break:break-word;line-height:1.5;letter-spacing:-.02em;color:var(--text)}
-  .card.done .title{text-decoration:line-through;opacity:.4}
-  .desc{color:var(--muted);font-size:13px;margin-top:8px;white-space:pre-wrap;word-break:break-word;line-height:1.65}
+  .title{font-weight:900;font-size:18px;flex:1;word-break:break-word;line-height:1.5;letter-spacing:-.02em;color:#fff}
+  .card.done .title{text-decoration:line-through;opacity:.5}
+  .desc{color:var(--muted);font-size:13px;margin-top:8px;white-space:pre-wrap;word-break:break-word;line-height:1.65;opacity:.7}
   .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center}
   .badge{
     font-size:10.5px;padding:6px 14px;border-radius:10px;border:none;font-weight:700;letter-spacing:.02em;
-    background:#f1f5f9; color:var(--muted);
+    background:rgba(255,255,255,.06); color:var(--muted);
   }
-  .badge.s-new{color:#1d4ed8;background:#dbeafe}
-  .badge.s-doing{color:#6d28d9;background:#ede9fe}
-  .badge.s-wait{color:#b45309;background:#fef3c7}
-  .badge.s-done{color:#15803d;background:#dcfce7}
-  .badge.p-high{color:#dc2626;background:#fee2e2;animation:pulse-red 3s infinite}
-  .badge.today{color:#15803d;background:#dcfce7}
+  .badge.s-new{color:#6cb6ff;background:rgba(79,157,255,.12)}
+  .badge.s-doing{color:#c49bff;background:rgba(163,113,247,.12)}
+  .badge.s-wait{color:#f5c842;background:rgba(210,153,34,.12)}
+  .badge.s-done{color:#56d364;background:rgba(63,185,80,.12)}
+  .badge.p-high{color:#ff7b72;background:rgba(248,81,73,.15);animation:pulse-red 3s infinite}
+  .badge.today{color:#56d364;background:rgba(63,185,80,.1)}
 
   /* ===== Color stripe ===== */
   .card[data-color]{ border-top:none; }
@@ -142,37 +141,37 @@
     position:relative;padding:12px 0;
     margin-right:0; transition:all .2s; border-right:none;
   }
-  .u+.u{border-top:1px solid var(--line)}
-  .u:hover{background:#f8fafc;border-radius:10px;margin:0 -8px;padding:12px 8px}
+  .u+.u{border-top:1px solid rgba(255,255,255,.04)}
+  .u:hover{background:rgba(255,255,255,.03);border-radius:10px;margin:0 -8px;padding:12px 8px}
   .u::before{display:none}
   .u-meta{font-size:10.5px;color:var(--muted);display:flex;gap:8px;align-items:center}
-  .u-text{white-space:pre-wrap;word-break:break-word;font-size:14.5px;margin-top:5px;line-height:1.7;color:var(--text)}
+  .u-text{white-space:pre-wrap;word-break:break-word;font-size:14.5px;margin-top:5px;line-height:1.7;color:rgba(230,237,243,.85)}
 
   /* === آخر تحديث بارز === */
   .u.is-latest{
-    background:linear-gradient(135deg, #eff6ff, #dbeafe);
+    background:linear-gradient(135deg, rgba(79,157,255,.1), rgba(47,111,208,.04));
     border-radius:14px; padding:16px 18px;
     border-right:none; margin:-4px -8px 8px; border-top:none;
-    border:1px solid #bfdbfe;
+    border:1px solid rgba(79,157,255,.12);
   }
   .u.is-latest .u-text{
-    font-size:17.5px; font-weight:800; color:#1e293b; line-height:1.7;
+    font-size:17.5px; font-weight:800; color:#fff; line-height:1.7;
   }
   .u.is-latest::before{display:none}
 
   .u .del{visibility:hidden;background:none;border:none;color:var(--muted);padding:4px 8px;font-size:12px;transition:all .15s;border-radius:8px}
   .u:hover .del{visibility:visible}
-  .u .del:hover{color:var(--red);background:#fee2e2}
-  .more{background:#eff6ff;border:none;color:var(--accent);font-size:12px;padding:8px 16px;font-weight:700;border-radius:10px;margin:4px 0;transition:all .2s}
-  .more:hover{background:#dbeafe}
+  .u .del:hover{color:var(--red);background:rgba(248,81,73,.1)}
+  .more{background:rgba(79,157,255,.08);border:none;color:var(--accent);font-size:12px;padding:8px 16px;font-weight:700;border-radius:10px;margin:4px 0;transition:all .2s}
+  .more:hover{background:rgba(79,157,255,.15)}
 
-  .card-foot{padding:16px 22px 20px;background:var(--panel-2);border-radius:0 0 20px 20px}
+  .card-foot{padding:16px 22px 20px;background:rgba(22,27,34,.5);border-radius:0 0 20px 20px}
   .card-foot textarea{
     width:100%;min-height:50px;max-height:160px;resize:vertical;padding:13px 16px;
-    background:#fff;border:2px solid var(--line);border-radius:14px;outline:none;
+    background:var(--bg);border:2px solid var(--line);border-radius:14px;outline:none;
     transition:all .3s ease; font-size:14px;
   }
-  .card-foot textarea:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(37,99,235,.08)}
+  .card-foot textarea:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(79,157,255,.1)}
   .foot-row{display:flex;gap:8px;align-items:center;margin-top:12px}
   .hint{color:var(--muted);font-size:11px;opacity:.4}
 
@@ -193,21 +192,20 @@
 
   /* ===== Modal ===== */
   .overlay{
-    position:fixed;inset:0;background:rgba(0,0,0,.3);backdrop-filter:blur(4px);display:none;
+    position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;
     align-items:center;justify-content:center;padding:20px;z-index:100;
   }
   .overlay.open{display:flex}
   .modal{
-    background:#fff;border:1px solid var(--line);border-radius:20px;
-    width:100%;max-width:560px;max-height:88vh;overflow:auto;padding:24px;
-    box-shadow:0 20px 60px rgba(0,0,0,.15);
+    background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    width:100%;max-width:560px;max-height:88vh;overflow:auto;padding:22px;
   }
   .modal h3{margin:0 0 16px}
   .field{margin-bottom:14px}
   .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
   .field input,.field textarea,.field select{
-    width:100%;padding:10px 12px;background:#f8fafc;
-    border:2px solid var(--line);border-radius:12px;outline:none;color:var(--text);
+    width:100%;padding:10px 12px;background:var(--panel-2);
+    border:1px solid var(--line);border-radius:10px;outline:none;
   }
   .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
   .field textarea{min-height:80px;resize:vertical}
