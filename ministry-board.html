@@ -1,0 +1,775 @@
+﻿<title>المركز الصناعي</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap">
+<style>
+:root {
+  --bg: #f4f6f4;
+  --surface: #ffffff;
+  --surface-hover: #f8faf8;
+  --text: #1e2e1e;
+  --text-secondary: #536653;
+  --text-muted: #8a9a8a;
+  --border: #d8e0d8;
+  --border-light: #e8ede8;
+  --accent: #1b6d3a;
+  --accent-dark: #14532b;
+  --accent-light: #2e9650;
+  --green-light: #8bc34a;
+  --green-pale: #e8f5e0;
+  --grey-warm: #5a5a5a;
+  --new-border: #2e9650;
+  --progress-border: #f59e0b;
+  --done-border: #1b6d3a;
+  --shadow: 0 1px 3px rgba(27,109,58,0.06);
+  --shadow-hover: 0 4px 12px rgba(27,109,58,0.12);
+  --shadow-modal: 0 20px 60px rgba(27,109,58,0.2);
+  --priority-high: #c0392b;
+  --priority-medium: #d4871a;
+  --priority-low: #2e9650;
+  --overlay: rgba(20,40,20,0.45);
+  --field-bg: #f5f8f5;
+  --activity-line: #d8e0d8;
+  --avatar-bg: #e8f5e0;
+  --avatar-color: #1b6d3a;
+  --font-display: 'Cairo', sans-serif;
+  --font-body: 'IBM Plex Sans Arabic', sans-serif;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1610;--surface:#182018;--surface-hover:#1e2a1e;--text:#e2e8e2;--text-secondary:#98ab98;--text-muted:#607060;--border:#283828;--border-light:#223022;--accent:#4caf50;--accent-dark:#2e7d32;--accent-light:#66bb6a;--green-light:#8bc34a;--green-pale:#1a2e14;--grey-warm:#9e9e9e;--new-border:#4caf50;--progress-border:#ffc107;--done-border:#66bb6a;--shadow:0 1px 3px rgba(0,0,0,0.4);--shadow-hover:0 4px 12px rgba(0,0,0,0.5);--shadow-modal:0 20px 60px rgba(0,0,0,0.7);--priority-high:#ef5350;--priority-medium:#ffa726;--priority-low:#66bb6a;--overlay:rgba(0,0,0,0.65);--field-bg:#142014;--activity-line:#283828;--avatar-bg:#1a2e14;--avatar-color:#66bb6a;
+}}
+:root[data-theme="dark"]{
+  --bg:#0f1610;--surface:#182018;--surface-hover:#1e2a1e;--text:#e2e8e2;--text-secondary:#98ab98;--text-muted:#607060;--border:#283828;--border-light:#223022;--accent:#4caf50;--accent-dark:#2e7d32;--accent-light:#66bb6a;--green-light:#8bc34a;--green-pale:#1a2e14;--grey-warm:#9e9e9e;--new-border:#4caf50;--progress-border:#ffc107;--done-border:#66bb6a;--shadow:0 1px 3px rgba(0,0,0,0.4);--shadow-hover:0 4px 12px rgba(0,0,0,0.5);--shadow-modal:0 20px 60px rgba(0,0,0,0.7);--priority-high:#ef5350;--priority-medium:#ffa726;--priority-low:#66bb6a;--overlay:rgba(0,0,0,0.65);--field-bg:#142014;--activity-line:#283828;--avatar-bg:#1a2e14;--avatar-color:#66bb6a;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);direction:rtl;min-height:100vh;}
+
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .priority-high{background:#2a1515}
+  :root:not([data-theme="light"]) .priority-medium{background:#2a2010}
+  :root:not([data-theme="light"]) .priority-low{background:#152218}
+}
+:root[data-theme="dark"] .priority-high{background:#2a1515}
+:root[data-theme="dark"] .priority-medium{background:#2a2010}
+:root[data-theme="dark"] .priority-low{background:#152218}
+
+/* HEADER */
+.header{background:var(--accent);color:#fff;padding:0 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;height:68px;}
+.header-right{display:flex;align-items:center;gap:14px;}
+.header-logo{height:44px;width:auto;flex-shrink:0;mix-blend-mode:multiply;}
+.header-text{}
+.header-title{font-family:var(--font-display);font-size:20px;font-weight:700;line-height:1.3;}
+.header-subtitle{font-size:11px;opacity:0.7;font-weight:300;letter-spacing:0.04em;}
+.header-left{display:flex;align-items:center;gap:10px;}
+.header-btn{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);color:#fff;padding:7px 16px;border-radius:6px;font-family:var(--font-body);font-size:12px;cursor:pointer;transition:background 0.15s;display:flex;align-items:center;gap:5px;}
+.header-btn:hover{background:rgba(255,255,255,0.22);}
+.header-btn.primary{background:var(--green-light);border-color:var(--green-light);color:#1e2e1e;font-weight:600;}
+.header-btn.primary:hover{background:#7cb342;}
+
+/* STATS */
+.stats-bar{display:flex;gap:1px;background:var(--border);border-bottom:1px solid var(--border);}
+.stat-item{flex:1;background:var(--surface);padding:14px 24px;display:flex;align-items:center;gap:12px;}
+.stat-number{font-family:var(--font-display);font-size:28px;font-weight:800;font-variant-numeric:tabular-nums;}
+.stat-label{font-size:12px;color:var(--text-secondary);line-height:1.5;}
+.stat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* BOARD */
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:0;min-height:calc(100vh - 150px);}
+.column{border-left:1px solid var(--border);display:flex;flex-direction:column;}
+.column:last-child{border-left:none;}
+.column-header{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:2;}
+.column-header-right{display:flex;align-items:center;gap:10px;}
+.column-title{font-family:var(--font-display);font-size:14px;font-weight:700;}
+.column-count{background:var(--border-light);color:var(--text-secondary);font-size:12px;font-weight:600;padding:2px 10px;border-radius:10px;font-variant-numeric:tabular-nums;}
+.column-add{width:28px;height:28px;border-radius:6px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all 0.15s;}
+.column-add:hover{border-color:var(--accent);color:var(--accent);background:var(--green-pale);}
+.col-new .column-header{border-bottom-color:var(--new-border);}
+.col-progress .column-header{border-bottom-color:var(--progress-border);}
+.col-done .column-header{border-bottom-color:var(--done-border);}
+
+/* CARDS */
+.cards{padding:10px;display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;cursor:pointer;transition:box-shadow 0.2s,border-color 0.2s;box-shadow:var(--shadow);}
+.card:hover{box-shadow:var(--shadow-hover);border-color:var(--accent);}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.card-priority{font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;letter-spacing:0.03em;white-space:nowrap;flex-shrink:0;}
+.priority-high{background:#fdeaea;color:var(--priority-high);}
+.priority-medium{background:#fef6e8;color:var(--priority-medium);}
+.priority-low{background:#e8f5e0;color:var(--priority-low);}
+.card-ref{font-size:11px;color:var(--text-muted);font-variant-numeric:tabular-nums;}
+.card-title{font-family:var(--font-display);font-size:13px;font-weight:600;line-height:1.6;margin-bottom:8px;}
+.card-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.card-tag{font-size:10px;color:var(--text-secondary);background:var(--border-light);padding:2px 7px;border-radius:4px;}
+.card-date{font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px;margin-right:auto;}
+.card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:8px;border-top:1px solid var(--border-light);}
+.card-assignee{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);}
+.avatar{width:24px;height:24px;border-radius:50%;background:var(--avatar-bg);color:var(--avatar-color);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;font-family:var(--font-display);}
+.avatar.lg{width:34px;height:34px;font-size:13px;}
+.card-due{font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px;}
+.card-due.overdue{color:var(--priority-high);font-weight:500;}
+.col-done .card{opacity:0.72;}
+.col-done .card-title{text-decoration:line-through;text-decoration-color:var(--text-muted);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:var(--overlay);z-index:100;display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;transition:opacity 0.2s;}
+.modal-overlay.open{display:flex;opacity:1;}
+.modal{background:var(--surface);border-radius:12px;box-shadow:var(--shadow-modal);width:100%;max-width:960px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;animation:modalIn 0.25s ease-out;}
+@keyframes modalIn{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+.modal-top{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--accent);color:#fff;}
+.modal-top-right{display:flex;align-items:center;gap:10px;}
+.modal-status{font-size:12px;font-weight:600;padding:4px 12px;border-radius:6px;background:rgba(255,255,255,0.18);color:#fff;}
+.modal-close{width:30px;height:30px;border:none;background:rgba(255,255,255,0.12);color:#fff;cursor:pointer;border-radius:6px;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
+.modal-close:hover{background:rgba(255,255,255,0.25);}
+
+.modal-header{padding:18px 24px 0;flex-shrink:0;}
+.modal-ref{font-size:12px;color:var(--text-muted);margin-bottom:4px;font-variant-numeric:tabular-nums;}
+.modal-title{font-family:var(--font-display);font-size:19px;font-weight:700;line-height:1.5;margin-bottom:14px;}
+
+.modal-actions{display:flex;gap:8px;padding:0 24px 14px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
+.modal-action{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-body);font-size:12px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:5px;}
+.modal-action:hover{border-color:var(--accent);color:var(--accent);}
+.modal-action.danger{color:var(--priority-high);border-color:transparent;}
+.modal-action.danger:hover{background:#fdeaea;}
+.modal-action.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.modal-action.primary:hover{background:var(--accent-dark);}
+
+.modal-body{display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden;min-height:0;}
+
+.detail-pane{padding:18px 24px;overflow-y:auto;border-left:1px solid var(--border);}
+.detail-section{margin-bottom:18px;}
+.detail-section-title{font-family:var(--font-display);font-size:12px;font-weight:700;color:var(--accent);margin-bottom:10px;letter-spacing:0.02em;text-transform:uppercase;}
+.field-row{display:flex;align-items:flex-start;margin-bottom:10px;gap:8px;}
+.field-label{flex:0 0 100px;font-size:12px;color:var(--text-muted);padding-top:7px;text-align:left;}
+.field-value{flex:1;background:var(--field-bg);border:1px solid var(--border-light);border-radius:6px;padding:6px 12px;font-size:13px;color:var(--text);min-height:32px;display:flex;align-items:center;}
+.field-value.clickable{cursor:pointer;transition:border-color 0.15s;}
+.field-value.clickable:hover{border-color:var(--accent);}
+.detail-tags{display:flex;gap:6px;flex-wrap:wrap;}
+.detail-tag{font-size:11px;color:var(--accent);background:var(--green-pale);padding:4px 10px;border-radius:4px;font-weight:500;}
+
+.activity-pane{padding:18px 24px;overflow-y:auto;display:flex;flex-direction:column;}
+.activity-tabs{display:flex;gap:0;margin-bottom:14px;border-bottom:2px solid var(--border-light);}
+.activity-tab{padding:7px 14px;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.15s;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-body);}
+.activity-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.activity-tab:hover{color:var(--text);}
+
+.timeline{flex:1;display:flex;flex-direction:column;gap:0;}
+.timeline-item{display:flex;gap:10px;padding:10px 0;position:relative;}
+.timeline-item:not(:last-child)::after{content:'';position:absolute;right:16px;top:42px;bottom:0;width:2px;background:var(--activity-line);}
+.timeline-avatar{flex-shrink:0;z-index:1;}
+.timeline-content{flex:1;min-width:0;}
+.timeline-header{display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap;}
+.timeline-name{font-size:13px;font-weight:600;color:var(--text);}
+.timeline-time{font-size:11px;color:var(--text-muted);}
+.timeline-badge{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;}
+.badge-status{background:var(--green-pale);color:var(--accent);}
+.badge-create{background:#e8f5e0;color:var(--priority-low);}
+.badge-note{background:var(--border-light);color:var(--text-secondary);}
+.timeline-text{font-size:13px;color:var(--text-secondary);line-height:1.7;}
+.timeline-delete{width:22px;height:22px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;border-radius:4px;font-size:13px;display:flex;align-items:center;justify-content:center;opacity:0;transition:all 0.15s;flex-shrink:0;margin-right:auto;}
+.timeline-item:hover .timeline-delete{opacity:1;}
+.timeline-delete:hover{background:#fdeaea;color:var(--priority-high);}
+.assignee-select{background:var(--field-bg);border:1px solid var(--border-light);border-radius:6px;padding:4px 8px;font-family:var(--font-body);font-size:12px;color:var(--text);direction:rtl;cursor:pointer;flex:1;}
+.assignee-select:focus{border-color:var(--accent);outline:none;}
+
+.comment-box{margin-top:auto;padding-top:14px;border-top:1px solid var(--border-light);display:flex;gap:8px;align-items:flex-end;flex-shrink:0;}
+.comment-input{flex:1;background:var(--field-bg);border:1px solid var(--border-light);border-radius:8px;padding:9px 12px;font-family:var(--font-body);font-size:13px;color:var(--text);resize:none;min-height:40px;max-height:100px;direction:rtl;outline:none;transition:border-color 0.15s;}
+.comment-input:focus{border-color:var(--accent);}
+.comment-input::placeholder{color:var(--text-muted);}
+.comment-send{width:36px;height:36px;border-radius:8px;border:none;background:var(--accent);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:background 0.15s;flex-shrink:0;}
+.comment-send:hover{background:var(--accent-dark);}
+
+/* TEAM DIRECTORY */
+.team-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 32px;display:flex;align-items:center;gap:10px;overflow-x:auto;}
+.team-bar-label{font-family:var(--font-display);font-size:12px;font-weight:700;color:var(--text-muted);white-space:nowrap;letter-spacing:0.02em;}
+.team-member{display:flex;align-items:center;gap:8px;background:var(--field-bg);border:1px solid var(--border-light);border-radius:8px;padding:6px 12px;white-space:nowrap;transition:border-color 0.15s;cursor:default;}
+.team-member:hover{border-color:var(--accent);}
+.team-member .avatar{width:26px;height:26px;font-size:10px;}
+.team-name{font-size:12px;font-weight:600;color:var(--text);}
+.team-role{font-size:10px;color:var(--text-muted);margin-right:2px;}
+.team-email{font-size:11px;color:var(--accent);text-decoration:none;direction:ltr;}
+.team-email:hover{text-decoration:underline;}
+.team-vp-badge{font-size:9px;background:var(--accent);color:#fff;padding:1px 6px;border-radius:3px;font-weight:600;letter-spacing:0.03em;}
+
+/* USER SELECT */
+.user-select-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 32px;display:flex;align-items:center;gap:10px;}
+.user-select-label{font-size:12px;color:var(--text-muted);font-weight:600;}
+.user-select{background:var(--field-bg);border:1px solid var(--border-light);border-radius:6px;padding:5px 10px;font-family:var(--font-body);font-size:12px;color:var(--text);direction:rtl;cursor:pointer;}
+.user-select:focus{border-color:var(--accent);outline:none;}
+
+/* NEW TASK MODAL */
+.new-task-overlay{position:fixed;inset:0;background:var(--overlay);z-index:200;display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;transition:opacity 0.2s;}
+.new-task-overlay.open{display:flex;opacity:1;}
+.new-task-modal{background:var(--surface);border-radius:12px;box-shadow:var(--shadow-modal);width:100%;max-width:520px;overflow:hidden;animation:modalIn 0.25s ease-out;}
+.new-task-top{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:var(--accent);color:#fff;}
+.new-task-top h3{font-family:var(--font-display);font-size:16px;font-weight:700;margin:0;}
+.new-task-form{padding:20px 24px;display:flex;flex-direction:column;gap:14px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group label{font-size:12px;font-weight:600;color:var(--text-secondary);}
+.form-group input,.form-group select,.form-group textarea{background:var(--field-bg);border:1px solid var(--border-light);border-radius:6px;padding:8px 12px;font-family:var(--font-body);font-size:13px;color:var(--text);direction:rtl;outline:none;transition:border-color 0.15s;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent);}
+.form-group textarea{resize:vertical;min-height:60px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.new-task-actions{display:flex;gap:8px;justify-content:flex-start;padding-top:6px;}
+.btn-submit{padding:8px 20px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-family:var(--font-body);font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s;}
+.btn-submit:hover{background:var(--accent-dark);}
+.btn-cancel{padding:8px 20px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-body);font-size:13px;cursor:pointer;transition:all 0.15s;}
+.btn-cancel:hover{border-color:var(--accent);}
+
+@media(max-width:900px){
+  .board{grid-template-columns:1fr;}
+  .column{border-left:none;border-bottom:1px solid var(--border);}
+  .stats-bar{flex-direction:column;}
+  .header{flex-direction:column;align-items:flex-start;height:auto;padding:16px 24px;}
+  .modal-body{grid-template-columns:1fr;grid-template-rows:auto 1fr;}
+  .detail-pane{border-left:none;border-bottom:1px solid var(--border);}
+  .modal{max-height:95vh;}
+  .team-bar{flex-wrap:wrap;}
+}
+</style>
+
+<div class="header">
+  <div class="header-right">
+    <img class="header-logo" src="data:image/png;base64,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" alt="المركز الصناعي">
+    <div class="header-text">
+      <div class="header-title">المركز الصناعي — طلبات الوزارة</div>
+      <div class="header-subtitle">مكتب إدارة المشاريع PMO · Industrial Center</div>
+    </div>
+  </div>
+  <div class="header-left">
+    <button class="header-btn"><span>⟳</span> تحديث</button>
+    <button class="header-btn"><span>☰</span> تصفية</button>
+    <button class="header-btn primary" onclick="openNewTask()"><span>+</span> مهمة جديدة</button>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-dot" style="background:var(--new-border)"></div><div class="stat-number" id="statNew">5</div><div class="stat-label">مهام جديدة<br>بانتظار التوزيع</div></div>
+  <div class="stat-item"><div class="stat-dot" style="background:var(--progress-border)"></div><div class="stat-number" id="statProgress">4</div><div class="stat-label">قيد التنفيذ<br>جاري العمل عليها</div></div>
+  <div class="stat-item"><div class="stat-dot" style="background:var(--done-border)"></div><div class="stat-number" id="statDone">3</div><div class="stat-label">تم الانتهاء<br>مكتملة هذا الشهر</div></div>
+</div>
+
+<div class="team-bar">
+  <span class="team-bar-label">👥 الفريق:</span>
+  <div class="team-member"><div class="avatar">مد</div><div><div class="team-name">محمد الدعفس <span class="team-vp-badge">VP</span></div><a class="team-email" href="mailto:mohammad.daafs@ic.gov.sa">mohammad.daafs@ic.gov.sa</a></div></div>
+  <div class="team-member"><div class="avatar">رن</div><div><div class="team-name">رندا صابر</div><a class="team-email" href="mailto:randa.saber@ic.gov.sa">randa.saber@ic.gov.sa</a></div></div>
+  <div class="team-member"><div class="avatar">فو</div><div><div class="team-name">فوز الحربي</div><a class="team-email" href="mailto:fouz.harbi@ic.gov.sa">fouz.harbi@ic.gov.sa</a></div></div>
+  <div class="team-member"><div class="avatar">يز</div><div><div class="team-name">يزيد المنيع</div><a class="team-email" href="mailto:yazeed.meniya@ic.gov.sa">yazeed.meniya@ic.gov.sa</a></div></div>
+  <div class="team-member"><div class="avatar">لج</div><div><div class="team-name">لجين العريفي</div><a class="team-email" href="mailto:lujain.arifi@ic.gov.sa">lujain.arifi@ic.gov.sa</a></div></div>
+</div>
+
+<div class="user-select-bar">
+  <span class="user-select-label">🖊 المستخدم الحالي:</span>
+  <select class="user-select" id="currentUser">
+    <option value="رندا صابر">رندا صابر</option>
+    <option value="فوز الحربي">فوز الحربي</option>
+    <option value="يزيد المنيع">يزيد المنيع</option>
+    <option value="لجين العريفي">لجين العريفي</option>
+    <option value="محمد الدعفس">محمد الدعفس</option>
+  </select>
+</div>
+
+<div class="board" id="board"></div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modal">
+    <div class="modal-top">
+      <div class="modal-top-right">
+        <span class="modal-status" id="modalStatus"></span>
+        <span class="card-priority" id="modalPriority" style="color:#fff"></span>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-header">
+      <div class="modal-ref" id="modalRef"></div>
+      <div class="modal-title" id="modalTitle"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-action primary" id="btnRemind" onclick="remindAssignee()">تذكير المسؤول</button>
+      <button class="modal-action">إرسال رسالة</button>
+      <button class="modal-action">ملاحظة</button>
+      <button class="modal-action danger">رفض</button>
+      <button class="modal-action danger">إلغاء</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-pane">
+        <div class="detail-section">
+          <div class="detail-section-title">بيانات الطلب</div>
+          <div class="field-row"><div class="field-label">المسؤول</div><div class="field-value" id="fAssignee" style="padding:0;overflow:hidden"><select class="assignee-select" id="assigneeSelect" onchange="changeAssignee(this.value)"><option>رندا صابر</option><option>فوز الحربي</option><option>يزيد المنيع</option><option>لجين العريفي</option><option>محمد الدعفس</option></select></div></div>
+          <div class="field-row"><div class="field-label">تاريخ الإنشاء</div><div class="field-value" id="fCreated"></div></div>
+          <div class="field-row"><div class="field-label">تاريخ التسليم</div><div class="field-value" id="fDue"></div></div>
+          <div class="field-row"><div class="field-label">الوقت المتبقي</div><div class="field-value" id="fTimeLeft"></div></div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-section-title">تفاصيل إضافية</div>
+          <div class="field-row"><div class="field-label">القسم</div><div class="field-value" id="fDept"></div></div>
+          <div class="field-row"><div class="field-label">الأولوية</div><div class="field-value" id="fPriorityText"></div></div>
+          <div class="field-row"><div class="field-label">الفريق</div><div class="field-value" id="fTeam"></div></div>
+          <div class="field-row"><div class="field-label">المرفقات</div><div class="field-value clickable">📎 لا يوجد مرفقات</div></div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-section-title">التصنيفات</div>
+          <div class="detail-tags" id="fTags"></div>
+        </div>
+      </div>
+      <div class="activity-pane">
+        <div class="activity-tabs">
+          <button class="activity-tab active">النشاط</button>
+          <button class="activity-tab">ملاحظات</button>
+        </div>
+        <div class="timeline" id="timeline"></div>
+        <div class="comment-box">
+          <textarea class="comment-input" placeholder="أضف تعليقاً..." rows="1"></textarea>
+          <button class="comment-send">↵</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New Task Modal -->
+<div class="new-task-overlay" id="newTaskOverlay">
+  <div class="new-task-modal">
+    <div class="new-task-top">
+      <h3>+ مهمة جديدة</h3>
+      <button class="modal-close" onclick="closeNewTask()">✕</button>
+    </div>
+    <div class="new-task-form">
+      <div class="form-group">
+        <label>عنوان المهمة *</label>
+        <input type="text" id="ntTitle" placeholder="أدخل عنوان المهمة...">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>المسؤول *</label>
+          <select id="ntAssignee">
+            <option value="رندا صابر">رندا صابر</option>
+            <option value="فوز الحربي">فوز الحربي</option>
+            <option value="يزيد المنيع">يزيد المنيع</option>
+            <option value="لجين العريفي">لجين العريفي</option>
+            <option value="محمد الدعفس">محمد الدعفس</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>الأولوية *</label>
+          <select id="ntPriority">
+            <option value="high">عاجل</option>
+            <option value="medium" selected>متوسط</option>
+            <option value="low">منخفض</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>تاريخ التسليم *</label>
+          <input type="date" id="ntDue">
+        </div>
+        <div class="form-group">
+          <label>القسم</label>
+          <input type="text" id="ntDept" placeholder="مثال: التطوير المؤسسي">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>الفريق</label>
+          <input type="text" id="ntTeam" placeholder="مثال: فريق الملتقيات">
+        </div>
+        <div class="form-group">
+          <label>التصنيفات</label>
+          <input type="text" id="ntTags" placeholder="فصل بفاصلة: ملتقى، تخطيط">
+        </div>
+      </div>
+      <div class="new-task-actions">
+        <button class="btn-submit" onclick="submitNewTask()">إضافة المهمة</button>
+        <button class="btn-cancel" onclick="closeNewTask()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TEAM_EMAILS = {
+  'رندا صابر': 'randa.saber@ic.gov.sa',
+  'فوز الحربي': 'fouz.harbi@ic.gov.sa',
+  'يزيد المنيع': 'yazeed.meniya@ic.gov.sa',
+  'لجين العريفي': 'lujain.arifi@ic.gov.sa',
+  'محمد الدعفس': 'mohammad.daafs@ic.gov.sa'
+};
+const VP_EMAIL = 'mohammad.daafs@ic.gov.sa';
+const INITIALS = {'رندا صابر':'رن','فوز الحربي':'فو','يزيد المنيع':'يز','لجين العريفي':'لج','محمد الدعفس':'مد'};
+
+let currentTaskIdx = null;
+
+const TASKS=[
+  // ===== مهام جديدة =====
+  // ملتقى التطوين - مهام جديدة
+  {id:'REQ-3010',title:'إعداد الخطة التفصيلية لملتقى التطوين وتحديد المحاور الرئيسية',priority:'high',priorityAr:'عاجل',tags:['ملتقى التطوين','تخطيط'],assignee:'رندا صابر',assigneeInit:'رن',due:'٣ سبتمبر',created:'٢٥ أغسطس ٢٠٢٦',overdue:false,status:'مهام جديدة',col:'new',dept:'التطوير المؤسسي',team:'فريق الملتقيات',
+    activity:[
+      {name:'النظام',init:'ن',time:'٢٥ أغسطس، ٩:٠٠ ص',badge:'create',badgeText:'إنشاء',text:'تم إنشاء المهمة وإسنادها لرندا صابر'},
+      {name:'محمد الدعفس',init:'مد',time:'٢٥ أغسطس، ١١:٣٠ ص',badge:'note',badgeText:'ملاحظة',text:'يرجى التنسيق مع إدارة الموارد البشرية لتحديد الاحتياجات التدريبية قبل وضع المحاور'},
+      {name:'رندا صابر',init:'رن',time:'٢٦ أغسطس، ١٠:١٥ ص',badge:'note',badgeText:'تحديث',text:'تم التواصل مع الموارد البشرية وطلب تقرير الاحتياجات، المتوقع استلامه خلال يومين'},
+      {name:'النظام',init:'ن',time:'٢٩ أغسطس، ٨:٠٠ ص',badge:'status',badgeText:'تذكير',text:'باقي ٥ أيام على موعد التسليم'}
+    ]},
+  {id:'REQ-3009',title:'تصميم الهوية البصرية لملتقى التطوين وإعداد المواد الدعائية',priority:'medium',priorityAr:'متوسط',tags:['ملتقى التطوين','تصميم'],assignee:'لجين العريفي',assigneeInit:'لج',due:'٧ سبتمبر',created:'٢٦ أغسطس ٢٠٢٦',overdue:false,status:'مهام جديدة',col:'new',dept:'الاتصال المؤسسي',team:'فريق التصميم',
+    activity:[
+      {name:'النظام',init:'ن',time:'٢٦ أغسطس، ٨:٣٠ ص',badge:'create',badgeText:'إنشاء',text:'تم إنشاء المهمة وإسنادها للجين العريفي'},
+      {name:'لجين العريفي',init:'لج',time:'٢٧ أغسطس، ٢:٠٠ م',badge:'note',badgeText:'ملاحظة',text:'أحتاج تأكيد شعار الملتقى والألوان المعتمدة من رندا قبل البدء بالتصميم'}
+    ]},
+  {id:'REQ-3008',title:'حصر قائمة المتحدثين والخبراء المرشحين لملتقى التطوين',priority:'medium',priorityAr:'متوسط',tags:['ملتقى التطوين','متحدثين'],assignee:'يزيد المنيع',assigneeInit:'يز',due:'١٠ سبتمبر',created:'٢٧ أغسطس ٢٠٢٦',overdue:false,status:'مهام جديدة',col:'new',dept:'التطوير المؤسسي',team:'فريق الملتقيات',
+    activity:[
+      {name:'النظام',init:'ن',time:'٢٧ أغسطس، ١٠:٠٠ ص',badge:'create',badgeText:'إنشاء',text:'تم إنشاء المهمة وإسنادها ليزيد المنيع'},
+      {name:'فوز الحربي',init:'فو',time:'٢٨ أغسطس، ٩:٤٥ ص',badge:'note',badgeText:'ملاحظة',text:'لدي قائمة بـ ٨ خبراء من ملتقى العام الماضي، سأشاركها مع يزيد'},
+      {name:'يزيد المنيع',init:'يز',time:'٢٩ أغسطس، ٣:٠٠ م',badge:'note',badgeText:'تحديث',text:'تم استلام القائمة من فوز، وجاري التواصل مع ٣ متحدثين جدد من القطاع الخاص'}
+    ]},
+
+  // تبادل المعرفة - مهام جديدة
+  {id:'REQ-3007',title:'إعداد منصة إلكترونية لتوثيق التجارب والممارسات الناجحة في تبادل المعرفة',priority:'high',priorityAr:'عاجل',tags:['تبادل المعرفة','منصة إلكترونية'],assignee:'محمد الدعفس',assigneeInit:'مد',due:'٥ سبتمبر',created:'٢٠ أغسطس ٢٠٢٦',overdue:false,status:'مهام جديدة',col:'new',dept:'تقنية المعلومات',team:'فريق التحول الرقمي',
+    activity:[
+      {name:'النظام',init:'ن',time:'٢٠ أغسطس، ٨:٠٠ ص',badge:'create',badgeText:'إنشاء',text:'تم إنشاء المهمة وإسنادها لمحمد الدعفس'},
+      {name:'محمد الدعفس',init:'مد',time:'٢٢ أغسطس، ١١:٠٠ ص',badge:'note',badgeText:'تحديث',text:'تم الاطلاع على منصات مشابهة في جهات حكومية أخرى، سأقدم ٣ خيارات تقنية'},
+      {name:'رندا صابر',init:'رن',time:'٢٤ أغسطس، ٤:٣٠ م',badge:'note',badgeText:'ملاحظة',text:'يفضل أن تدعم المنصة رفع ملفات PDF وفيديو لتوثيق التجارب بشكل مرئي'},
+      {name:'النظام',init:'ن',time:'٢٨ أغسطس، ٨:٠٠ ص',badge:'status',badgeText:'تذكير',text:'باقي ٨ أيام على موعد التسليم'}
+    ]},
+
+  // إطار التكامل - مهام جديدة
+  {id:'REQ-3006',title:'تحليل الفجوات بين استراتيجيات جهات المنظومة وإعداد تقرير أولي',priority:'low',priorityAr:'منخفض',tags:['إطار التكامل','تحليل'],assignee:'فوز الحربي',assigneeInit:'فو',due:'١٥ سبتمبر',created:'٢٢ أغسطس ٢٠٢٦',overdue:false,status:'مهام جديدة',col:'new',dept:'التخطيط الاستراتيجي',team:'فريق الاستراتيجية',
+    activity:[
+      {name:'النظام',init:'ن',time:'٢٢ أغسطس، ٩:٠٠ ص',badge:'create',badgeText:'إنشاء',text:'تم إنشاء المهمة وإسنادها لفوز الحربي'},
+      {name:'فوز الحربي',init:'فو',time:'٢٤ أغسطس، ١٠:٠٠ ص',badge:'note',badgeText:'تحديث',text:'تم جمع الخطط الاستراتيجية من ٤ جهات، باقي ٣ جهات لم تستجب بعد'},
+      {name:'لجين العريفي',init:'لج',time:'٢٦ أغسطس، ١:١٥ م',badge:'note',badgeText:'ملاحظة',text:'أقترح استخدام نموذج SWOT لتحليل كل جهة على حدة قبل المقارنة'}
+    ]},
+
+  // ===== قيد التنفيذ =====
+  // ملتقى التطوين - قيد التنفيذ
+  {id:'REQ-3005',title:'التنسيق اللوجستي لملتقى التطوين وحجز القاعات والضيافة',priority:'high',priorityAr:'عاجل',tags:['ملتقى التطوين','لوجستيات'],assignee:'فوز الحربي',assigneeInit:'فو',due:'١ سبتمبر',created:'١٥ أغسطس ٢٠٢٦',overdue:false,status:'قيد التنفيذ',col:'progress',dept:'الخدمات المساندة',team:'فريق الفعاليات',
+    activity:[
+      {name:'النظام',init:'ن',time:'١٥ أغسطس، ٩:٠٠ ص',badge:'create',badgeText:'إنشاء',text:'تم إنشاء المهمة وإسنادها لفوز الحربي'},
+      {name:'النظام',init:'ن',time:'١٧ أغسطس، ٩:٠٠ ص',badge:'status',badgeText:'تحويل',text:'مهام جديدة ← قيد التنفيذ'},
+      {name:'فوز الحربي',init:'فو',time:'١٨ أغسطس، ٢:٣٠ م',badge:'note',badgeText:'تحديث',text:'تم حجز قاعة المؤتمرات الرئيسية ليوم ١٨ سبتمبر، سعة ٢٥٠ شخص'},
+      {name:'فوز الحربي',init:'فو',time:'٢٢ أغسطس، ١١:٠٠ ص',badge:'note',badgeText:'تحديث',text:'تم التعاقد مع شركة الضيافة، بانتظار تأكيد القائمة النهائية للحضور'},
+      {name:'يزيد المنيع',init:'يز',time:'٢٥ أغسطس، ٣:٤٥ م',badge:'note',badgeText:'ملاحظة',text:'يرجى تجهيز ٣ قاعات فرعية لورش العمل المصاحبة بالإضافة للقاعة الرئيسية'},
+      {name:'فوز الحربي',init:'فو',time:'٢٨ أغسطس، ١٠:٠٠ ص',badge:'note',badgeText:'تحديث',text:'تم تأكيد حجز القاعات الفرعية، جاري تجهيز متطلبات العرض والصوت'}
+    ]},
+
+  // تبادل المعرفة - قيد التنفيذ
+  {id:'REQ-3004',title:'جمع وتوثيق ١٠ تجارب ناجحة من الجهات الحكومية لملف تبادل المعرفة',priority:'medium',priorityAr:'متوسط',tags:['تبادل المعرفة','توثيق'],assignee:'رندا صابر',assigneeInit:'رن',due:'٨ سبتمبر',created:'١٢ أغسطس ٢٠٢٦',overdue:false,status:'قيد التنفيذ',col:'progress',dept:'التطوير المؤسسي',team:'فريق المعرفة',
+    activity:[
+      {name:'النظام',init:'ن',time:'١٢ أغسطس، ٨:٠٠ ص',badge:'create',badgeText:'إنشاء',text:'تم إنشاء المهمة وإسنادها لرندا صابر'},
+      {name:'النظام',init:'ن',time:'١٤ أغسطس، ٩:٠٠ ص',badge:'status',badgeText:'تحويل',text:'مهام جديدة ← قيد التنفيذ'},
+      {name:'رندا صابر',init:'رن',time:'١٨ أغسطس، ١٠:٠٠ ص',badge:'note',badgeText:'تحديث',text:'تم توثيق ٤ تجارب: وزارة الصحة (نظام التتبع)، وزارة التعليم (منصة التدريب)، الزراعة (الري الذكي)، والصناعة (أتمتة المصانع)'},
+      {name:'لجين العريفي',init:'لج',time:'٢٣ أغسطس، ٤:٠٠ م',badge:'note',badgeText:'ملاحظة',text:'سأساعد في تنسيق القوالب لتوحيد شكل التوثيق بين جميع التجارب'},
+      {name:'رندا صابر',init:'رن',time:'٢٧ أغسطس، ١١:٣٠ ص',badge:'note',badgeText:'تحديث',text:'أصبح لدينا ٦ تجارب مكتملة التوثيق و٢ قيد المراجعة، باقي ٢ بانتظار ردود الجهات'}
+    ]},
+
+  // إطار التكامل - قيد التنفيذ
+  {id:'REQ-3003',title:'صياغة مسودة إطار التكامل بين الاستراتيجيات وتحديد نقاط التقاطع',priority:'high',priorityAr:'عاجل',tags:['إطار التكامل','استراتيجية'],assignee:'يزيد المنيع',assigneeInit:'يز',due:'٣١ أغسطس',created:'١٠ أغسطس ٢٠٢٦',overdue:true,status:'قيد التنفيذ',col:'progress',dept:'التخطيط الاستراتيجي',team:'فريق الاستراتيجية',
+    activity:[
+      {name:'النظام',init:'ن',time:'١٠ أغسطس، ٩:٠٠ ص',badge:'create',badgeText:'إنشاء',text:'تم إنشاء المهمة وإسنادها ليزيد المنيع'},
+      {name:'النظام',init:'ن',time:'١٢ أغسطس، ٩:٠٠ ص',badge:'status',badgeText:'تحويل',text:'مهام جديدة ← قيد التنفيذ'},
+      {name:'يزيد المنيع',init:'يز',time:'١٥ أغسطس، ٢:٠٠ م',badge:'note',badgeText:'تحديث',text:'تم تحديد ٧ محاور تقاطع رئيسية بين ٥ استراتيجيات في المنظومة'},
+      {name:'محمد الدعفس',init:'مد',time:'٢٠ أغسطس، ١٠:٣٠ ص',badge:'note',badgeText:'ملاحظة',text:'أقترح إضافة مصفوفة RACI لتوضيح مسؤوليات كل جهة في نقاط التقاطع'},
+      {name:'يزيد المنيع',init:'يز',time:'٢٥ أغسطس، ٤:٠٠ م',badge:'note',badgeText:'تحديث',text:'المسودة الأولى جاهزة بنسبة ٨٥٪، تم إضافة مصفوفة RACI، بانتظار مراجعة فوز للجزء التحليلي'},
+      {name:'فوز الحربي',init:'فو',time:'٢٨ أغسطس، ٩:٠٠ ص',badge:'note',badgeText:'تحديث',text:'راجعت الأقسام ١-٤ من المسودة، لدي ملاحظات على محور التكامل المالي سأرسلها اليوم'},
+      {name:'النظام',init:'ن',time:'٣٠ أغسطس، ٨:٠٠ ص',badge:'status',badgeText:'تذكير',text:'تجاوز موعد التسليم بيوم واحد'}
+    ]},
+
+  {id:'REQ-3002',title:'إعداد عرض تقديمي لنتائج تبادل المعرفة للممارسات الدولية',priority:'medium',priorityAr:'متوسط',tags:['تبادل المعرفة','عرض تقديمي'],assignee:'لجين العريفي',assigneeInit:'لج',due:'١٠ سبتمبر',created:'١٨ أغسطس ٢٠٢٦',overdue:false,status:'قيد التنفيذ',col:'progress',dept:'الاتصال المؤسسي',team:'فريق المعرفة',
+    activity:[
+      {name:'النظام',init:'ن',time:'١٨ أغسطس، ٩:٠٠ ص',badge:'create',badgeText:'إنشاء',text:'تم إنشاء المهمة وإسنادها للجين العريفي'},
+      {name:'النظام',init:'ن',time:'٢٠ أغسطس، ٩:٠٠ ص',badge:'status',badgeText:'تحويل',text:'مهام جديدة ← قيد التنفيذ'},
+      {name:'لجين العريفي',init:'لج',time:'٢٣ أغسطس، ١١:٠٠ ص',badge:'note',badgeText:'تحديث',text:'تم الانتهاء من تصميم ٢٠ شريحة تغطي تجارب ٥ دول (سنغافورة، كوريا، الإمارات، ماليزيا، فنلندا)'},
+      {name:'رندا صابر',init:'رن',time:'٢٧ أغسطس، ٣:١٥ م',badge:'note',badgeText:'ملاحظة',text:'ممتاز العمل لجين، أقترح إضافة مقارنة مع الوضع الحالي في المملكة لكل تجربة'}
+    ]},
+
+  // ===== تم الانتهاء =====
+  {id:'REQ-3001',title:'إعداد ورقة عمل تأسيسية لمبادرة تبادل المعرفة بين جهات المنظومة',priority:'high',priorityAr:'عاجل',tags:['تبادل المعرفة','ورقة عمل'],assignee:'رندا صابر',assigneeInit:'رن',due:'٢٠ أغسطس',created:'٥ أغسطس ٢٠٢٦',overdue:false,status:'تم الانتهاء',col:'done',dept:'التطوير المؤسسي',team:'فريق المعرفة',completed:'١٩ أغسطس',
+    activity:[
+      {name:'النظام',init:'ن',time:'٥ أغسطس، ٨:٠٠ ص',badge:'create',badgeText:'إنشاء',text:'تم إنشاء المهمة وإسنادها لرندا صابر'},
+      {name:'النظام',init:'ن',time:'٧ أغسطس، ٩:٠٠ ص',badge:'status',badgeText:'تحويل',text:'مهام جديدة ← قيد التنفيذ'},
+      {name:'رندا صابر',init:'رن',time:'١٢ أغسطس، ٢:٠٠ م',badge:'note',badgeText:'تحديث',text:'تم إعداد المسودة الأولى وتضمين أهداف المبادرة والجدول الزمني المقترح'},
+      {name:'يزيد المنيع',init:'يز',time:'١٥ أغسطس، ١٠:٣٠ ص',badge:'note',badgeText:'مراجعة',text:'راجعت الورقة، ملاحظاتي بسيطة على قسم المخاطر — أرسلتها على الإيميل'},
+      {name:'رندا صابر',init:'رن',time:'١٩ أغسطس، ١١:٠٠ ص',badge:'note',badgeText:'إنجاز',text:'تم تعديل الورقة بناءً على ملاحظات يزيد واعتمادها من المدير العام'},
+      {name:'النظام',init:'ن',time:'١٩ أغسطس، ١١:٣٠ ص',badge:'status',badgeText:'إغلاق',text:'قيد التنفيذ ← تم الانتهاء'}
+    ]},
+  {id:'REQ-3000',title:'رفع تقرير إطار التكامل الأولي لمعالي الوزير مع التوصيات',priority:'high',priorityAr:'عاجل',tags:['إطار التكامل','تقرير'],assignee:'محمد الدعفس',assigneeInit:'مد',due:'١٥ أغسطس',created:'١ أغسطس ٢٠٢٦',overdue:false,status:'تم الانتهاء',col:'done',dept:'مكتب PMO',team:'فريق الاستراتيجية',completed:'١٤ أغسطس',
+    activity:[
+      {name:'النظام',init:'ن',time:'١ أغسطس، ٩:٠٠ ص',badge:'create',badgeText:'إنشاء',text:'تم إنشاء المهمة وإسنادها لمحمد الدعفس'},
+      {name:'النظام',init:'ن',time:'٣ أغسطس، ٩:٠٠ ص',badge:'status',badgeText:'تحويل',text:'مهام جديدة ← قيد التنفيذ'},
+      {name:'محمد الدعفس',init:'مد',time:'٧ أغسطس، ٣:٠٠ م',badge:'note',badgeText:'تحديث',text:'تم تجميع مدخلات جميع الأقسام وصياغة الملخص التنفيذي'},
+      {name:'فوز الحربي',init:'فو',time:'١٠ أغسطس، ٩:١٥ ص',badge:'note',badgeText:'مراجعة',text:'راجعت القسم المالي والتشغيلي — لا ملاحظات جوهرية'},
+      {name:'محمد الدعفس',init:'مد',time:'١٤ أغسطس، ١٠:٠٠ ص',badge:'note',badgeText:'إنجاز',text:'تم رفع التقرير لمكتب معالي الوزير مع ٥ توصيات رئيسية'},
+      {name:'النظام',init:'ن',time:'١٤ أغسطس، ١٠:٣٠ ص',badge:'status',badgeText:'إغلاق',text:'قيد التنفيذ ← تم الانتهاء'}
+    ]},
+  {id:'REQ-2999',title:'تنظيم جلسة عصف ذهني لمحاور ملتقى التطوين مع أصحاب المصلحة',priority:'medium',priorityAr:'متوسط',tags:['ملتقى التطوين','عصف ذهني'],assignee:'يزيد المنيع',assigneeInit:'يز',due:'١٨ أغسطس',created:'٨ أغسطس ٢٠٢٦',overdue:false,status:'تم الانتهاء',col:'done',dept:'التطوير المؤسسي',team:'فريق الملتقيات',completed:'١٧ أغسطس',
+    activity:[
+      {name:'النظام',init:'ن',time:'٨ أغسطس، ٩:٠٠ ص',badge:'create',badgeText:'إنشاء',text:'تم إنشاء المهمة وإسنادها ليزيد المنيع'},
+      {name:'النظام',init:'ن',time:'١٠ أغسطس، ٩:٠٠ ص',badge:'status',badgeText:'تحويل',text:'مهام جديدة ← قيد التنفيذ'},
+      {name:'يزيد المنيع',init:'يز',time:'١٢ أغسطس، ١:٠٠ م',badge:'note',badgeText:'تحديث',text:'تم إرسال الدعوات لـ ٢٥ مشارك من ٨ جهات مختلفة'},
+      {name:'يزيد المنيع',init:'يز',time:'١٧ أغسطس، ٤:٠٠ م',badge:'note',badgeText:'إنجاز',text:'تمت الجلسة بنجاح — حضر ٢٢ مشارك، وخرجنا بـ ٦ محاور مقترحة و١٤ فكرة لورش العمل'},
+      {name:'رندا صابر',init:'رن',time:'١٧ أغسطس، ٥:٣٠ م',badge:'note',badgeText:'ملاحظة',text:'محضر الجلسة ممتاز يزيد، سأبني عليه خطة الملتقى'},
+      {name:'النظام',init:'ن',time:'١٧ أغسطس، ٦:٠٠ م',badge:'status',badgeText:'إغلاق',text:'قيد التنفيذ ← تم الانتهاء'}
+    ]},
+];
+
+function renderBoard(){
+  const cols={new:[],progress:[],done:[]};
+  TASKS.forEach((t,i)=>cols[t.col].push({...t,idx:i}));
+  const colDefs=[
+    {key:'new',title:'مهام جديدة',cls:'col-new',count:cols.new.length},
+    {key:'progress',title:'قيد التنفيذ',cls:'col-progress',count:cols.progress.length},
+    {key:'done',title:'تم الانتهاء',cls:'col-done',count:cols.done.length},
+  ];
+  document.getElementById('statNew').textContent=cols.new.length;
+  document.getElementById('statProgress').textContent=cols.progress.length;
+  document.getElementById('statDone').textContent=cols.done.length;
+  document.getElementById('board').innerHTML=colDefs.map(c=>`
+    <div class="column ${c.cls}">
+      <div class="column-header">
+        <div class="column-header-right">
+          <div class="column-title">${c.title}</div>
+          <span class="column-count">${c.count}</span>
+        </div>
+        ${c.key!=='done'?'<button class="column-add">+</button>':''}
+      </div>
+      <div class="cards">
+        ${cols[c.key].map(t=>`
+          <div class="card" onclick="openModal(${t.idx})">
+            <div class="card-top">
+              <span class="card-ref">${t.id}</span>
+              <span class="card-priority priority-${t.priority}">${t.priorityAr}</span>
+            </div>
+            <div class="card-title">${t.title}</div>
+            <div class="card-meta">${t.tags.map(g=>`<span class="card-tag">${g}</span>`).join('')}</div>
+            <div class="card-footer">
+              <div class="card-assignee"><div class="avatar">${t.assigneeInit}</div> ${t.assignee}</div>
+              ${t.completed?`<div class="card-date">✓ أُنجز ${t.completed}</div>`:`<div class="card-due${t.overdue?' overdue':''}">⏱ ${t.due}</div>`}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function openModal(idx){
+  currentTaskIdx=idx;
+  const t=TASKS[idx];
+  document.getElementById('modalRef').textContent=t.id;
+  document.getElementById('modalTitle').textContent=t.title;
+  document.getElementById('modalStatus').textContent=t.status;
+  const mp=document.getElementById('modalPriority');
+  mp.textContent=t.priorityAr;
+  mp.className='card-priority priority-'+t.priority;
+  document.getElementById('assigneeSelect').value=t.assignee;
+  document.getElementById('fCreated').textContent=t.created;
+  document.getElementById('fDue').textContent=t.due;
+  const timeLeft=t.completed?'مكتمل':t.overdue?'متأخر عن الموعد':'في الموعد';
+  const tlEl=document.getElementById('fTimeLeft');
+  tlEl.textContent=timeLeft;
+  tlEl.style.color=t.completed?'var(--priority-low)':t.overdue?'var(--priority-high)':'var(--text)';
+  document.getElementById('fDept').textContent=t.dept;
+  document.getElementById('fPriorityText').textContent=t.priorityAr;
+  document.getElementById('fTeam').textContent=t.team;
+  document.getElementById('fTags').innerHTML=t.tags.map(g=>`<span class="detail-tag">${g}</span>`).join('');
+  renderTimeline();
+  const ov=document.getElementById('modalOverlay');
+  ov.style.display='flex';
+  requestAnimationFrame(()=>ov.style.opacity='1');
+  document.body.style.overflow='hidden';
+}
+
+function closeModal(){
+  const ov=document.getElementById('modalOverlay');
+  ov.style.opacity='0';
+  setTimeout(()=>{ov.style.display='none';document.body.style.overflow='';},200);
+}
+
+document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// Render timeline with delete buttons
+function renderTimeline(){
+  if(currentTaskIdx===null) return;
+  const t=TASKS[currentTaskIdx];
+  document.getElementById('timeline').innerHTML=t.activity.map((a,i)=>`
+    <div class="timeline-item">
+      <div class="timeline-avatar"><div class="avatar lg">${a.init}</div></div>
+      <div class="timeline-content">
+        <div class="timeline-header">
+          <span class="timeline-name">${a.name}</span>
+          <span class="timeline-badge badge-${a.badge}">${a.badgeText}</span>
+          <span class="timeline-time">${a.time}</span>
+          <button class="timeline-delete" onclick="deleteActivity(${i})" title="حذف">✕</button>
+        </div>
+        <div class="timeline-text">${a.text}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Delete activity entry
+function deleteActivity(actIdx){
+  if(currentTaskIdx===null) return;
+  if(!confirm('هل تريد حذف هذا التحديث؟')) return;
+  TASKS[currentTaskIdx].activity.splice(actIdx,1);
+  renderTimeline();
+}
+
+// Change assignee
+function changeAssignee(newName){
+  if(currentTaskIdx===null) return;
+  const t=TASKS[currentTaskIdx];
+  const oldName=t.assignee;
+  if(oldName===newName) return;
+  t.assignee=newName;
+  t.assigneeInit=INITIALS[newName]||newName.slice(0,2);
+  // Add activity entry for reassignment
+  const userName=document.getElementById('currentUser').value;
+  const userInit=INITIALS[userName]||userName.slice(0,2);
+  t.activity.push({name:userName,init:userInit,time:nowAr(),badge:'status',badgeText:'تحويل',text:`تم تغيير المسؤول من ${oldName} إلى ${newName}`});
+  renderTimeline();
+  renderBoard();
+  const timeline=document.getElementById('timeline');
+  timeline.scrollTop=timeline.scrollHeight;
+}
+
+// Format current date/time in Arabic style
+function nowAr(){
+  const d=new Date();
+  const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  const day=d.getDate();
+  const mon=months[d.getMonth()];
+  let h=d.getHours(), ampm=h>=12?'م':'ص';
+  if(h>12)h-=12; if(h===0)h=12;
+  const min=String(d.getMinutes()).padStart(2,'0');
+  return `${day} ${mon}، ${h}:${min} ${ampm}`;
+}
+
+// Comment submit
+function submitComment(){
+  if(currentTaskIdx===null) return;
+  const input=document.querySelector('.comment-input');
+  const text=input.value.trim();
+  if(!text) return;
+  const userName=document.getElementById('currentUser').value;
+  const userInit=INITIALS[userName]||userName.slice(0,2);
+  const entry={name:userName,init:userInit,time:nowAr(),badge:'note',badgeText:'تحديث',text:text};
+  TASKS[currentTaskIdx].activity.push(entry);
+  renderTimeline();
+  input.value='';
+  const timeline=document.getElementById('timeline');
+  timeline.scrollTop=timeline.scrollHeight;
+}
+
+document.querySelector('.comment-send').addEventListener('click',submitComment);
+document.querySelector('.comment-input').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submitComment();}
+});
+
+// Remind assignee via email
+function remindAssignee(){
+  if(currentTaskIdx===null) return;
+  const t=TASKS[currentTaskIdx];
+  const email=TEAM_EMAILS[t.assignee];
+  if(!email) return;
+  const subject=encodeURIComponent(`تذكير: ${t.title} (${t.id})`);
+  const body=encodeURIComponent(
+`السلام عليكم ${t.assignee}،
+
+هذا تذكير بخصوص المهمة التالية:
+
+▪ رقم الطلب: ${t.id}
+▪ المهمة: ${t.title}
+▪ تاريخ التسليم: ${t.due}
+▪ الحالة: ${t.status}
+
+يرجى تحديث حالة المهمة في أقرب وقت.
+
+مع التحية،
+مكتب إدارة المشاريع PMO
+المركز الصناعي`
+  );
+  const cc=t.assignee==='محمد الدعفس'?'':VP_EMAIL;
+  const mailto=`mailto:${email}?cc=${cc}&subject=${subject}&body=${body}`;
+  const a=document.createElement('a');
+  a.href=mailto;
+  a.target='_top';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// New Task
+let taskCounter=3011;
+function openNewTask(){
+  document.getElementById('newTaskOverlay').style.display='flex';
+  requestAnimationFrame(()=>document.getElementById('newTaskOverlay').style.opacity='1');
+  document.getElementById('ntTitle').value='';
+  document.getElementById('ntDept').value='';
+  document.getElementById('ntTeam').value='';
+  document.getElementById('ntTags').value='';
+  document.getElementById('ntDue').value='';
+  document.getElementById('ntPriority').value='medium';
+  document.body.style.overflow='hidden';
+}
+function closeNewTask(){
+  const ov=document.getElementById('newTaskOverlay');
+  ov.style.opacity='0';
+  setTimeout(()=>{ov.style.display='none';document.body.style.overflow='';},200);
+}
+document.getElementById('newTaskOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeNewTask();});
+
+function formatDateAr(dateStr){
+  if(!dateStr) return '';
+  const d=new Date(dateStr);
+  const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  return `${d.getDate()} ${months[d.getMonth()]}`;
+}
+function formatCreatedAr(dateStr){
+  if(!dateStr) return '';
+  const d=new Date(dateStr);
+  const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function submitNewTask(){
+  const title=document.getElementById('ntTitle').value.trim();
+  if(!title){alert('يرجى إدخال عنوان المهمة');return;}
+  const dueVal=document.getElementById('ntDue').value;
+  if(!dueVal){alert('يرجى تحديد تاريخ التسليم');return;}
+  const assignee=document.getElementById('ntAssignee').value;
+  const priority=document.getElementById('ntPriority').value;
+  const priorityMap={high:'عاجل',medium:'متوسط',low:'منخفض'};
+  const dept=document.getElementById('ntDept').value.trim()||'عام';
+  const team=document.getElementById('ntTeam').value.trim()||'غير محدد';
+  const tagsStr=document.getElementById('ntTags').value.trim();
+  const tags=tagsStr?tagsStr.split(/[,،]/).map(s=>s.trim()).filter(Boolean):['عام'];
+  const id='REQ-'+taskCounter++;
+  const createdBy=document.getElementById('currentUser').value;
+  const createdInit=INITIALS[createdBy]||createdBy.slice(0,2);
+  const newTask={
+    id:id,
+    title:title,
+    priority:priority,
+    priorityAr:priorityMap[priority],
+    tags:tags,
+    assignee:assignee,
+    assigneeInit:INITIALS[assignee]||assignee.slice(0,2),
+    due:formatDateAr(dueVal),
+    created:formatCreatedAr(new Date().toISOString().slice(0,10)),
+    overdue:false,
+    status:'مهام جديدة',
+    col:'new',
+    dept:dept,
+    team:team,
+    activity:[
+      {name:'النظام',init:'ن',time:nowAr(),badge:'create',badgeText:'إنشاء',text:`تم إنشاء المهمة بواسطة ${createdBy} وإسنادها ل${assignee}`}
+    ]
+  };
+  TASKS.unshift(newTask);
+  renderBoard();
+  closeNewTask();
+}
+
+renderBoard();
+</script>
