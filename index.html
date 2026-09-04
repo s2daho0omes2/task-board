@@ -319,60 +319,56 @@
 
   /* ===== Parent Task (مهمة رئيسية) ===== */
   .parent-tasks{padding:0 18px;margin-top:12px}
+  .parent-group{margin-bottom:24px}
   .parent-card{
-    background:linear-gradient(135deg,#131a24,#0f1620);
-    border:1px solid var(--line);border-radius:20px;margin-bottom:16px;overflow:hidden;
-    box-shadow:0 4px 20px rgba(0,0,0,.3);
+    background:var(--panel);border:2px solid var(--accent-2);border-radius:20px;
+    box-shadow:0 8px 32px rgba(0,0,0,.4), 0 0 20px rgba(79,157,255,.08);
+    overflow:visible;position:relative;
   }
-  .parent-header{
-    padding:18px 22px;display:flex;align-items:center;gap:14px;cursor:pointer;
-    border-bottom:1px solid rgba(255,255,255,.04);
+  .parent-card::before{
+    content:"";position:absolute;top:16px;right:-5px;width:10px;bottom:16px;
+    border-radius:5px;background:linear-gradient(180deg,var(--accent),var(--violet));z-index:5;
+    box-shadow:0 0 14px rgba(79,157,255,.4);
   }
-  .parent-header:hover{background:rgba(255,255,255,.02)}
-  .parent-icon{font-size:22px}
-  .parent-title{font-weight:900;font-size:17px;flex:1;color:#fff}
-  .parent-progress{display:flex;align-items:center;gap:10px}
-  .parent-progress-bar{width:120px;height:8px;background:var(--panel-2);border-radius:4px;overflow:hidden}
-  .parent-progress-fill{height:100%;border-radius:4px;background:var(--green);transition:width .5s ease}
-  .parent-progress-text{font-size:12px;color:var(--muted);font-weight:700;min-width:55px;text-align:left}
-  .parent-toggle{font-size:14px;color:var(--muted);transition:transform .2s;padding:4px}
+  .parent-status-bar{
+    padding:14px 22px;display:flex;align-items:center;justify-content:space-between;
+    font-size:12px;font-weight:800;letter-spacing:.06em;
+    border-radius:20px 20px 0 0;
+    background:linear-gradient(135deg,#142744,#0c1a32);color:var(--accent);
+  }
+  .parent-head{padding:20px 22px 14px;cursor:pointer}
+  .parent-head:hover{background:rgba(255,255,255,.02);border-radius:0}
+  .parent-head .row{display:flex;align-items:flex-start;gap:10px}
+  .parent-icon{font-size:24px}
+  .parent-title{font-weight:900;font-size:20px;flex:1;color:#fff;line-height:1.4}
+  .parent-desc{color:var(--muted);font-size:13px;margin-top:8px;line-height:1.6}
+  .parent-progress-row{display:flex;align-items:center;gap:12px;margin-top:14px}
+  .parent-progress-bar{flex:1;height:10px;background:var(--panel-2);border-radius:5px;overflow:hidden}
+  .parent-progress-fill{height:100%;border-radius:5px;transition:width .5s ease}
+  .parent-progress-text{font-size:13px;color:var(--muted);font-weight:800;min-width:70px;text-align:left}
+  .parent-foot{padding:12px 22px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.04)}
+  .parent-toggle{font-size:13px;color:var(--muted);transition:transform .2s;padding:4px}
   .parent-toggle.open{transform:rotate(180deg)}
-  .parent-actions{display:flex;gap:8px;align-items:center}
-  .parent-body{display:none;padding:0 22px 18px}
-  .parent-body.open{display:block}
-  .parent-desc{color:var(--muted);font-size:13px;padding:14px 0 10px;line-height:1.6;border-bottom:1px solid rgba(255,255,255,.04)}
-  .sub-list{padding:10px 0}
-  .sub-item{
-    display:flex;align-items:center;gap:12px;padding:10px 14px;
-    border-radius:12px;transition:background .15s;margin:2px 0;
-  }
-  .sub-item:hover{background:rgba(255,255,255,.04)}
-  .sub-check{
-    width:22px;height:22px;border-radius:50%;border:2px solid var(--line);
-    background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;
-    font-size:12px;color:transparent;transition:all .2s;flex-shrink:0;
-  }
-  .sub-check.checked{background:var(--green);border-color:var(--green);color:#fff}
-  .sub-check:hover{border-color:var(--accent)}
-  .sub-title{flex:1;font-size:14px;color:var(--text);line-height:1.5}
-  .sub-title.checked{text-decoration:line-through;opacity:.4;color:var(--muted)}
-  .sub-status{font-size:11px;padding:4px 10px;border-radius:8px;font-weight:700}
-  .sub-link{font-size:11px;color:var(--accent);cursor:pointer;opacity:.6;text-decoration:none}
-  .sub-link:hover{opacity:1}
-  .sub-del{background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;opacity:0;transition:opacity .15s;padding:4px}
-  .sub-item:hover .sub-del{opacity:.6}
-  .sub-del:hover{color:var(--red);opacity:1}
-  .add-sub{
-    display:flex;gap:8px;margin-top:10px;padding-top:10px;
-    border-top:1px solid rgba(255,255,255,.04);
-  }
-  .add-sub input{
-    flex:1;padding:8px 12px;background:var(--panel-2);border:1px solid var(--line);
-    border-radius:10px;outline:none;font-size:13px;
-  }
-  .add-sub input:focus{border-color:var(--accent)}
   .parent-edit-btn{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;opacity:.5}
   .parent-edit-btn:hover{opacity:1;color:var(--accent)}
+
+  /* === Subtask cards container === */
+  .sub-cards{
+    display:none;padding:8px 0 0 40px;
+    border-right:3px solid rgba(79,157,255,.15);margin-right:20px;
+  }
+  .sub-cards.open{display:flex;flex-wrap:nowrap;gap:16px;overflow-x:auto;padding-bottom:16px}
+  .sub-cards .card{min-width:340px;max-width:370px;flex-shrink:0;position:static !important;width:auto}
+  .add-sub-bar{
+    display:none;padding:8px 0 0 40px;margin-right:20px;
+    border-right:3px solid rgba(79,157,255,.15);
+  }
+  .add-sub-bar.open{display:flex;gap:8px;padding-bottom:16px}
+  .add-sub-bar input{
+    flex:1;max-width:300px;padding:8px 12px;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:10px;outline:none;font-size:13px;
+  }
+  .add-sub-bar input:focus{border-color:var(--accent)}
 
   @media(max-width:600px){ .grid-mode .canvas{grid-template-columns:1fr} .two{grid-template-columns:1fr} .card{width:100%} .dash-grid{grid-template-columns:repeat(2,1fr)} .parent-progress-bar{width:80px} }
 </style>
@@ -807,7 +803,10 @@ function autoLayout(){
 /* ================= العرض ================= */
 function visible(){
   const q=query.trim().toLowerCase();
+  const linkedIds=getLinkedTaskIds();
   return tasks.filter(t=>t&&t.id).filter(t=>{
+    // Hide tasks linked to a parent (they show under the parent)
+    if(linkedIds.has(t.id)&&filter!=="stale") return false;
     // المكتملة تروح للأرشيف إلا إذا المستخدم اختار فلتر "مكتملة"
     if(t.status==="done"&&filter!=="done") return false;
     if(filterAssignee && (t.assignee||"")!==filterAssignee) return false;
@@ -1441,57 +1440,101 @@ function saveParents(){
   }
 }
 
+function getLinkedTaskIds(){
+  const ids=new Set();
+  parentTasks.forEach(p=>(p.subtasks||[]).forEach(s=>{if(typeof s==="string")ids.add(s);}));
+  return ids;
+}
+
 function renderParents(){
   const area=$("#parentTasksArea");
   if(!parentTasks.length){ area.innerHTML=""; return; }
 
   area.innerHTML = parentTasks.map(p=>{
-    const subs = (p.subtasks||[]).map(sid=>{
-      // subtask can be a linked task id or an inline subtask
-      if(typeof sid==="string"){
-        const t=tasks.find(x=>x.id===sid);
-        if(!t) return null;
-        const done=t.status==="done";
-        return {id:sid, title:t.title, done, status:STATUS[t.status], linked:true};
-      }
-      return {id:sid.id, title:sid.title, done:sid.done||false, linked:false};
-    }).filter(Boolean);
-
-    const total=subs.length;
-    const doneCount=subs.filter(s=>s.done).length;
+    const linkedIds=(p.subtasks||[]).filter(s=>typeof s==="string");
+    const inlineSubs=(p.subtasks||[]).filter(s=>typeof s!=="string");
+    const linkedTasks=linkedIds.map(id=>tasks.find(t=>t.id===id)).filter(Boolean);
+    const allSubs=[...linkedTasks.map(t=>({done:t.status==="done"})),...inlineSubs];
+    const total=allSubs.length;
+    const doneCount=allSubs.filter(s=>s.done).length;
     const pct=total?Math.round((doneCount/total)*100):0;
     const isOpen=parentExpanded.has(p.id);
+    const pctColor=pct>=100?"var(--green)":pct>50?"var(--accent)":"var(--amber)";
 
-    const subsHtml=subs.map(s=>{
-      const statusCls=s.done?"s-done":(s.linked?"":" ");
-      return `<div class="sub-item">
-        <button class="sub-check ${s.done?"checked":""}" data-psub="${p.id}|${s.id}" title="${s.done?"إعادة فتح":"إكمال"}">${s.done?"✓":""}</button>
-        <span class="sub-title ${s.done?"checked":""}">${esc(s.title)}</span>
-        ${s.linked?`<a class="sub-link" data-goto="${s.id}">↗ فتح</a>`:""}
-        ${s.status&&!s.done?`<span class="sub-status badge s-${s.linked?(tasks.find(t=>t.id===s.id)||{}).status||"new":"new"}">${s.status||""}</span>`:""}
-        <button class="sub-del" data-pdel="${p.id}|${s.id}" title="إزالة">✕</button>
+    // Render linked subtask cards using the same card template
+    const subCardsHtml=linkedTasks.map(t=>{
+      const ups=[...(t.updates||[])].sort((a,b)=>b.at-a.at);
+      const latestId=ups.length?ups[0].id:null;
+      const shown=ups.slice(0,2);
+      const statusBarCls={new:'s-new-bar',doing:'s-doing-bar',wait:'s-wait-bar',done:'s-done-bar'};
+      const statusEmoji={new:'🆕',doing:'⚡',wait:'⏸️',done:'✅'};
+      return `<div class="card ${t.status==="done"?"done":""} ${isStale(t)?"stale":""}" data-id="${t.id}">
+        <div class="card-status-bar ${statusBarCls[t.status]||'s-new-bar'}">
+          <span>${statusEmoji[t.status]||''} ${STATUS[t.status]}</span>
+          <span style="opacity:.5">${t.num?'#'+t.num:''}</span>
+        </div>
+        <div class="card-head">
+          <div class="row">
+            <div class="title">${esc(t.title)}</div>
+            <button class="btn sm ghost" data-edit="${t.id}" title="تعديل" style="opacity:.5;font-size:18px">✎</button>
+          </div>
+          <div class="badges">
+            ${t.assignee?`<span class="badge">👤 ${esc(t.assignee)}</span>`:""}
+            <span class="badge">📝 ${(t.updates||[]).length} تحديث</span>
+            <span class="badge">🕐 ${rel(lastAt(t))}</span>
+          </div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="updates" style="max-height:160px">
+          ${shown.length?shown.map(u=>`<div class="u ${u.id===latestId?"is-latest":""}">
+            <div class="u-meta"><span>${fmt(u.at)}</span><span>·</span><span>${rel(u.at)}</span></div>
+            <div class="u-text">${esc(u.text)}</div>
+          </div>`).join(""):'<div class="empty-u">لا توجد تحديثات</div>'}
+        </div>
+        <div class="card-foot">
+          <textarea data-input="${t.id}" placeholder="اكتب تحديث..."></textarea>
+          <div class="foot-row">
+            <button class="btn primary sm" data-add="${t.id}">إضافة تحديث</button>
+            ${t.status!=="done"
+              ?`<button class="btn sm" data-done="${t.id}">تمّت</button>`
+              :`<button class="btn sm" data-reopen="${t.id}">إعادة فتح</button>`}
+            <button class="btn sm ghost" data-pdel-card="${p.id}|${t.id}" title="فك الربط" style="opacity:.4">✕</button>
+          </div>
+        </div>
       </div>`;
     }).join("");
 
-    return `<div class="parent-card" data-pid="${p.id}">
-      <div class="parent-header" data-ptoggle="${p.id}">
-        <span class="parent-icon">${p.icon||"📁"}</span>
-        <span class="parent-title">${esc(p.title)}</span>
-        <div class="parent-progress">
-          <div class="parent-progress-bar"><div class="parent-progress-fill" style="width:${pct}%;${pct>=100?"background:var(--green)":pct>50?"background:var(--accent)":"background:var(--amber)"}"></div></div>
-          <span class="parent-progress-text">${doneCount}/${total} (${pct}%)</span>
+    return `<div class="parent-group">
+      <div class="parent-card" data-pid="${p.id}">
+        <div class="parent-status-bar">
+          <span>📁 مهمة رئيسية</span>
+          <span>${doneCount}/${total} مكتملة</span>
         </div>
-        <button class="parent-edit-btn" data-pedit="${p.id}" title="تعديل">✎</button>
-        <span class="parent-toggle ${isOpen?"open":""}">▼</span>
+        <div class="parent-head" data-ptoggle="${p.id}">
+          <div class="row">
+            <span class="parent-icon">${p.icon||"📁"}</span>
+            <div style="flex:1">
+              <div class="parent-title">${esc(p.title)}</div>
+              ${p.desc?`<div class="parent-desc">${esc(p.desc)}</div>`:""}
+            </div>
+            <button class="parent-edit-btn" data-pedit="${p.id}" title="تعديل">✎</button>
+            <span class="parent-toggle ${isOpen?"open":""}">▼</span>
+          </div>
+          <div class="parent-progress-row">
+            <div class="parent-progress-bar"><div class="parent-progress-fill" style="width:${pct}%;background:${pctColor}"></div></div>
+            <span class="parent-progress-text">${pct}%</span>
+          </div>
+        </div>
+        <div class="parent-foot">
+          <button class="btn sm primary" data-plink="${p.id}">🔗 ربط مهمة</button>
+          <button class="btn sm" data-padd-new="${p.id}">+ فرعية جديدة</button>
+          <span style="color:var(--muted);font-size:12px">${total} فرعية</span>
+        </div>
       </div>
-      <div class="parent-body ${isOpen?"open":""}">
-        ${p.desc?`<div class="parent-desc">${esc(p.desc)}</div>`:""}
-        <div class="sub-list">${subsHtml||'<div style="color:var(--muted);font-size:13px;padding:8px 0">لا توجد مهام فرعية — أضف من الأسفل</div>'}</div>
-        <div class="add-sub">
-          <input placeholder="أضف مهمة فرعية..." data-padd-input="${p.id}">
-          <button class="btn sm primary" data-padd="${p.id}">+ إضافة</button>
-          <button class="btn sm" data-plink="${p.id}" title="ربط مهمة موجودة">🔗 ربط</button>
-        </div>
+      <div class="sub-cards ${isOpen?"open":""}">${subCardsHtml}</div>
+      <div class="add-sub-bar ${isOpen?"open":""}">
+        <input placeholder="أضف مهمة فرعية سريعة..." data-padd-input="${p.id}">
+        <button class="btn sm primary" data-padd="${p.id}">+ إضافة</button>
       </div>
     </div>`;
   }).join("");
@@ -1525,6 +1568,36 @@ document.addEventListener("click",e=>{
     return;
   }
 
+  // Unlink card from parent
+  const unlinkCard=e.target.closest("[data-pdel-card]");
+  if(unlinkCard){
+    const[pid,tid]=unlinkCard.dataset.pdelCard.split("|");
+    const p=parentTasks.find(x=>x.id===pid);
+    if(!p)return;
+    p.subtasks=(p.subtasks||[]).filter(s=>(typeof s==="string"?s:s.id)!==tid);
+    saveParents(); renderParents(); render();
+    toast("تم فك الربط ✓");
+    return;
+  }
+
+  // Add new subtask as a real task
+  const addNewBtn=e.target.closest("[data-padd-new]");
+  if(addNewBtn){
+    const pid=addNewBtn.dataset.paddNew;
+    const title=prompt("عنوان المهمة الفرعية الجديدة:");
+    if(!title||!title.trim())return;
+    const maxNum=tasks.reduce((m,t)=>Math.max(m,t.num||0),0);
+    const newTask={id:uid(),num:maxNum+1,title:title.trim(),desc:"",status:"new",
+      priority:"normal",color:"",deadline:"",assignee:"",created:Date.now(),updates:[]};
+    tasks.push(newTask);
+    const p=parentTasks.find(x=>x.id===pid);
+    if(!p.subtasks)p.subtasks=[];
+    p.subtasks.push(newTask.id);
+    save(); saveParents(); render(); renderParents();
+    toast("تم إضافة المهمة الفرعية ✓");
+    return;
+  }
+
   // Delete subtask
   const del=e.target.closest("[data-pdel]");
   if(del){
@@ -1536,18 +1609,23 @@ document.addEventListener("click",e=>{
     return;
   }
 
-  // Add inline subtask
+  // Add inline subtask (creates a real task and links it)
   const addBtn=e.target.closest("[data-padd]");
   if(addBtn){
     const pid=addBtn.dataset.padd;
     const input=document.querySelector(`[data-padd-input="${pid}"]`);
     const text=input.value.trim();
     if(!text){input.focus();return;}
+    const maxNum=tasks.reduce((m,t)=>Math.max(m,t.num||0),0);
+    const newTask={id:uid(),num:maxNum+1,title:text,desc:"",status:"new",
+      priority:"normal",color:"",deadline:"",assignee:"",created:Date.now(),updates:[]};
+    tasks.push(newTask);
     const p=parentTasks.find(x=>x.id===pid);
     if(!p.subtasks)p.subtasks=[];
-    p.subtasks.push({id:uid(),title:text,done:false});
+    p.subtasks.push(newTask.id);
     input.value="";
-    saveParents(); renderParents();
+    save(); saveParents(); render(); renderParents();
+    toast("تم إضافة المهمة ✓");
     return;
   }
 
