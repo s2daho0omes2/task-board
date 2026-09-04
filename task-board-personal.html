@@ -317,7 +317,64 @@
   .ai-quick-panel .close-panel{position:absolute;top:12px;left:12px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
   .ai-quick-panel .loading{color:var(--muted);font-size:14px}
 
-  @media(max-width:600px){ .grid-mode .canvas{grid-template-columns:1fr} .two{grid-template-columns:1fr} .card{width:100%} .dash-grid{grid-template-columns:repeat(2,1fr)} }
+  /* ===== Parent Task (مهمة رئيسية) ===== */
+  .parent-tasks{padding:0 18px;margin-top:12px}
+  .parent-card{
+    background:linear-gradient(135deg,#131a24,#0f1620);
+    border:1px solid var(--line);border-radius:20px;margin-bottom:16px;overflow:hidden;
+    box-shadow:0 4px 20px rgba(0,0,0,.3);
+  }
+  .parent-header{
+    padding:18px 22px;display:flex;align-items:center;gap:14px;cursor:pointer;
+    border-bottom:1px solid rgba(255,255,255,.04);
+  }
+  .parent-header:hover{background:rgba(255,255,255,.02)}
+  .parent-icon{font-size:22px}
+  .parent-title{font-weight:900;font-size:17px;flex:1;color:#fff}
+  .parent-progress{display:flex;align-items:center;gap:10px}
+  .parent-progress-bar{width:120px;height:8px;background:var(--panel-2);border-radius:4px;overflow:hidden}
+  .parent-progress-fill{height:100%;border-radius:4px;background:var(--green);transition:width .5s ease}
+  .parent-progress-text{font-size:12px;color:var(--muted);font-weight:700;min-width:55px;text-align:left}
+  .parent-toggle{font-size:14px;color:var(--muted);transition:transform .2s;padding:4px}
+  .parent-toggle.open{transform:rotate(180deg)}
+  .parent-actions{display:flex;gap:8px;align-items:center}
+  .parent-body{display:none;padding:0 22px 18px}
+  .parent-body.open{display:block}
+  .parent-desc{color:var(--muted);font-size:13px;padding:14px 0 10px;line-height:1.6;border-bottom:1px solid rgba(255,255,255,.04)}
+  .sub-list{padding:10px 0}
+  .sub-item{
+    display:flex;align-items:center;gap:12px;padding:10px 14px;
+    border-radius:12px;transition:background .15s;margin:2px 0;
+  }
+  .sub-item:hover{background:rgba(255,255,255,.04)}
+  .sub-check{
+    width:22px;height:22px;border-radius:50%;border:2px solid var(--line);
+    background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    font-size:12px;color:transparent;transition:all .2s;flex-shrink:0;
+  }
+  .sub-check.checked{background:var(--green);border-color:var(--green);color:#fff}
+  .sub-check:hover{border-color:var(--accent)}
+  .sub-title{flex:1;font-size:14px;color:var(--text);line-height:1.5}
+  .sub-title.checked{text-decoration:line-through;opacity:.4;color:var(--muted)}
+  .sub-status{font-size:11px;padding:4px 10px;border-radius:8px;font-weight:700}
+  .sub-link{font-size:11px;color:var(--accent);cursor:pointer;opacity:.6;text-decoration:none}
+  .sub-link:hover{opacity:1}
+  .sub-del{background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;opacity:0;transition:opacity .15s;padding:4px}
+  .sub-item:hover .sub-del{opacity:.6}
+  .sub-del:hover{color:var(--red);opacity:1}
+  .add-sub{
+    display:flex;gap:8px;margin-top:10px;padding-top:10px;
+    border-top:1px solid rgba(255,255,255,.04);
+  }
+  .add-sub input{
+    flex:1;padding:8px 12px;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:10px;outline:none;font-size:13px;
+  }
+  .add-sub input:focus{border-color:var(--accent)}
+  .parent-edit-btn{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;opacity:.5}
+  .parent-edit-btn:hover{opacity:1;color:var(--accent)}
+
+  @media(max-width:600px){ .grid-mode .canvas{grid-template-columns:1fr} .two{grid-template-columns:1fr} .card{width:100%} .dash-grid{grid-template-columns:repeat(2,1fr)} .parent-progress-bar{width:80px} }
 </style>
 </head>
 <body>
@@ -328,6 +385,7 @@
     <div class="stats" id="stats"></div>
     <div class="spacer"></div>
     <button class="btn sm" id="btnMode" title="تبديل العرض">📌 عرض حر</button>
+    <button class="btn" id="btnNewParent" style="background:linear-gradient(135deg,#1a2744,#0f1a2e);border-color:#2a4a7a">📁 مهمة رئيسية</button>
     <button class="btn primary" id="btnNew">+ مهمة جديدة</button>
     <button class="btn" id="btnAI">✨ تحليل بالذكاء الاصطناعي</button>
     <button class="btn ghost" id="btnExport" title="حفظ نسخة احتياطية">تصدير</button>
@@ -349,6 +407,40 @@
   <select id="filterAssignee" style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;color:var(--text);font-size:13px;cursor:pointer">
     <option value="">كل المسؤولين</option>
   </select>
+</div>
+
+<!-- المهام الرئيسية -->
+<div class="parent-tasks" id="parentTasksArea"></div>
+
+<!-- مودال المهمة الرئيسية -->
+<div class="overlay" id="parentModal">
+  <div class="modal">
+    <h3 id="parentModalTitle">📁 مهمة رئيسية جديدة</h3>
+    <input type="hidden" id="pId">
+    <div class="field"><label>عنوان المهمة الرئيسية</label><input id="pTitle" placeholder="مثال: بدء أعمال البناء"></div>
+    <div class="field"><label>وصف مختصر (اختياري)</label><textarea id="pDesc" placeholder="وصف عام للمهمة الرئيسية..." style="min-height:60px"></textarea></div>
+    <div class="field"><label>أيقونة</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="pIconRow">
+        <button class="btn sm" data-icon="🏗️" style="font-size:18px">🏗️</button>
+        <button class="btn sm" data-icon="🏢" style="font-size:18px">🏢</button>
+        <button class="btn sm" data-icon="💼" style="font-size:18px">💼</button>
+        <button class="btn sm" data-icon="📌" style="font-size:18px">📌</button>
+        <button class="btn sm" data-icon="📋" style="font-size:18px">📋</button>
+        <button class="btn sm" data-icon="⚡" style="font-size:18px">⚡</button>
+        <button class="btn sm" data-icon="🎯" style="font-size:18px">🎯</button>
+        <button class="btn sm" data-icon="🔧" style="font-size:18px">🔧</button>
+      </div>
+    </div>
+    <div class="field"><label>ربط مهام موجودة (اختياري — اختر المهام الفرعية)</label>
+      <div id="pLinkTasks" style="max-height:200px;overflow:auto;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn primary" id="pSave">حفظ</button>
+      <button class="btn ghost" data-close>إلغاء</button>
+      <div class="spacer"></div>
+      <button class="btn danger" id="pDelete" style="display:none">حذف</button>
+    </div>
+  </div>
 </div>
 
 <!-- شريط التنبيهات -->
@@ -864,8 +956,9 @@ function render(){
   } else {
     archSec.style.display = "none";
   }
-  // update alerts
+  // update alerts & parents
   updateAlerts();
+  renderParents();
   if(dashOpen) buildDashboard();
 }
 
@@ -1269,6 +1362,305 @@ if(useFirebase){
   });
 } /* end useFirebase */
 
+/* ================= المهام الرئيسية (Parent Tasks) ================= */
+const PARENT_KEY = "taskBoard.parents";
+let parentTasks = loadParents();
+let parentExpanded = new Set();
+let parentTasksRef = useFirebase ? db.ref("parentTasks") : null;
+
+function loadParents(){
+  try{ const r=localStorage.getItem(PARENT_KEY); return r?JSON.parse(r):[]; }catch(e){return[];}
+}
+function saveParents(){
+  localStorage.setItem(PARENT_KEY, JSON.stringify(parentTasks));
+  if(useFirebase && parentTasksRef){
+    const map={};
+    parentTasks.forEach(p=>{ if(p&&p.id) map[p.id]=p; });
+    parentTasksRef.set(map).catch(err=>console.warn("Firebase parent write failed:",err));
+  }
+}
+
+function renderParents(){
+  const area=$("#parentTasksArea");
+  if(!parentTasks.length){ area.innerHTML=""; return; }
+
+  area.innerHTML = parentTasks.map(p=>{
+    const subs = (p.subtasks||[]).map(sid=>{
+      // subtask can be a linked task id or an inline subtask
+      if(typeof sid==="string"){
+        const t=tasks.find(x=>x.id===sid);
+        if(!t) return null;
+        const done=t.status==="done";
+        return {id:sid, title:t.title, done, status:STATUS[t.status], linked:true};
+      }
+      return {id:sid.id, title:sid.title, done:sid.done||false, linked:false};
+    }).filter(Boolean);
+
+    const total=subs.length;
+    const doneCount=subs.filter(s=>s.done).length;
+    const pct=total?Math.round((doneCount/total)*100):0;
+    const isOpen=parentExpanded.has(p.id);
+
+    const subsHtml=subs.map(s=>{
+      const statusCls=s.done?"s-done":(s.linked?"":" ");
+      return `<div class="sub-item">
+        <button class="sub-check ${s.done?"checked":""}" data-psub="${p.id}|${s.id}" title="${s.done?"إعادة فتح":"إكمال"}">${s.done?"✓":""}</button>
+        <span class="sub-title ${s.done?"checked":""}">${esc(s.title)}</span>
+        ${s.linked?`<a class="sub-link" data-goto="${s.id}">↗ فتح</a>`:""}
+        ${s.status&&!s.done?`<span class="sub-status badge s-${s.linked?(tasks.find(t=>t.id===s.id)||{}).status||"new":"new"}">${s.status||""}</span>`:""}
+        <button class="sub-del" data-pdel="${p.id}|${s.id}" title="إزالة">✕</button>
+      </div>`;
+    }).join("");
+
+    return `<div class="parent-card" data-pid="${p.id}">
+      <div class="parent-header" data-ptoggle="${p.id}">
+        <span class="parent-icon">${p.icon||"📁"}</span>
+        <span class="parent-title">${esc(p.title)}</span>
+        <div class="parent-progress">
+          <div class="parent-progress-bar"><div class="parent-progress-fill" style="width:${pct}%;${pct>=100?"background:var(--green)":pct>50?"background:var(--accent)":"background:var(--amber)"}"></div></div>
+          <span class="parent-progress-text">${doneCount}/${total} (${pct}%)</span>
+        </div>
+        <button class="parent-edit-btn" data-pedit="${p.id}" title="تعديل">✎</button>
+        <span class="parent-toggle ${isOpen?"open":""}">▼</span>
+      </div>
+      <div class="parent-body ${isOpen?"open":""}">
+        ${p.desc?`<div class="parent-desc">${esc(p.desc)}</div>`:""}
+        <div class="sub-list">${subsHtml||'<div style="color:var(--muted);font-size:13px;padding:8px 0">لا توجد مهام فرعية — أضف من الأسفل</div>'}</div>
+        <div class="add-sub">
+          <input placeholder="أضف مهمة فرعية..." data-padd-input="${p.id}">
+          <button class="btn sm primary" data-padd="${p.id}">+ إضافة</button>
+          <button class="btn sm" data-plink="${p.id}" title="ربط مهمة موجودة">🔗 ربط</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// Toggle parent expand/collapse
+document.addEventListener("click",e=>{
+  const toggle=e.target.closest("[data-ptoggle]");
+  if(toggle && !e.target.closest("[data-pedit]")){
+    const pid=toggle.dataset.ptoggle;
+    parentExpanded.has(pid)?parentExpanded.delete(pid):parentExpanded.add(pid);
+    renderParents();
+    return;
+  }
+
+  // Check/uncheck subtask
+  const check=e.target.closest("[data-psub]");
+  if(check){
+    const[pid,sid]=check.dataset.psub.split("|");
+    const p=parentTasks.find(x=>x.id===pid);
+    if(!p)return;
+    const sub=p.subtasks.find(s=>(typeof s==="string"?s:s.id)===sid);
+    if(typeof sub==="string"){
+      // linked task — toggle its status
+      const t=tasks.find(x=>x.id===sid);
+      if(t){ t.status=t.status==="done"?"doing":"done"; save(); }
+    } else if(sub){
+      sub.done=!sub.done;
+    }
+    saveParents(); renderParents(); render();
+    return;
+  }
+
+  // Delete subtask
+  const del=e.target.closest("[data-pdel]");
+  if(del){
+    const[pid,sid]=del.dataset.pdel.split("|");
+    const p=parentTasks.find(x=>x.id===pid);
+    if(!p)return;
+    p.subtasks=p.subtasks.filter(s=>(typeof s==="string"?s:s.id)!==sid);
+    saveParents(); renderParents();
+    return;
+  }
+
+  // Add inline subtask
+  const addBtn=e.target.closest("[data-padd]");
+  if(addBtn){
+    const pid=addBtn.dataset.padd;
+    const input=document.querySelector(`[data-padd-input="${pid}"]`);
+    const text=input.value.trim();
+    if(!text){input.focus();return;}
+    const p=parentTasks.find(x=>x.id===pid);
+    if(!p.subtasks)p.subtasks=[];
+    p.subtasks.push({id:uid(),title:text,done:false});
+    input.value="";
+    saveParents(); renderParents();
+    return;
+  }
+
+  // Link existing task
+  const linkBtn=e.target.closest("[data-plink]");
+  if(linkBtn){
+    const pid=linkBtn.dataset.plink;
+    openLinkModal(pid);
+    return;
+  }
+
+  // Go to linked task
+  const goto=e.target.closest("[data-goto]");
+  if(goto){
+    const tid=goto.dataset.goto;
+    const card=document.querySelector(`.card[data-id="${tid}"]`);
+    if(card) card.scrollIntoView({behavior:"smooth",block:"center"});
+    return;
+  }
+
+  // Edit parent
+  const editBtn=e.target.closest("[data-pedit]");
+  if(editBtn){
+    e.stopPropagation();
+    openParentModal(editBtn.dataset.pedit);
+    return;
+  }
+});
+
+// Enter key for add subtask
+document.addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&e.target.matches("[data-padd-input]")){
+    e.preventDefault();
+    const pid=e.target.dataset.paddInput;
+    document.querySelector(`[data-padd="${pid}"]`).click();
+  }
+});
+
+// Link modal — show task picker
+function openLinkModal(pid){
+  const p=parentTasks.find(x=>x.id===pid);
+  const linked=new Set((p.subtasks||[]).filter(s=>typeof s==="string"));
+  const available=tasks.filter(t=>t&&t.id&&t.status!=="done"&&!linked.has(t.id));
+
+  if(!available.length) return toast("لا توجد مهام متاحة للربط");
+
+  const html=available.map(t=>
+    `<label style="display:flex;gap:8px;align-items:center;padding:6px 0;cursor:pointer;font-size:13px">
+      <input type="checkbox" data-link-tid="${t.id}" style="accent-color:var(--accent)">
+      <span>${esc(t.title)}</span>
+      <span style="color:var(--muted);font-size:11px">(${STATUS[t.status]})</span>
+    </label>`
+  ).join("");
+
+  // Reuse a simple confirm approach
+  const overlay=document.createElement("div");
+  overlay.className="overlay open";
+  overlay.innerHTML=`<div class="modal" style="max-width:480px">
+    <h3>🔗 ربط مهام موجودة</h3>
+    <div style="max-height:300px;overflow:auto;padding:8px 0">${html}</div>
+    <div class="modal-actions">
+      <button class="btn primary" id="linkConfirm">ربط المحدد</button>
+      <button class="btn ghost" id="linkCancel">إلغاء</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+
+  overlay.querySelector("#linkCancel").onclick=()=>overlay.remove();
+  overlay.querySelector("#linkConfirm").onclick=()=>{
+    const checked=overlay.querySelectorAll("[data-link-tid]:checked");
+    if(!p.subtasks)p.subtasks=[];
+    checked.forEach(cb=>{ p.subtasks.push(cb.dataset.linkTid); });
+    saveParents(); renderParents();
+    overlay.remove();
+    toast(`تم ربط ${checked.length} مهمة ✓`);
+  };
+}
+
+// Parent modal
+let selectedParentIcon="📁";
+$("#pIconRow").addEventListener("click",e=>{
+  const btn=e.target.closest("[data-icon]"); if(!btn)return;
+  selectedParentIcon=btn.dataset.icon;
+  document.querySelectorAll("#pIconRow .btn").forEach(b=>b.style.outline="");
+  btn.style.outline="2px solid var(--accent)";
+});
+
+function openParentModal(id){
+  const p=id?parentTasks.find(x=>x.id===id):null;
+  $("#parentModalTitle").textContent=p?"✏️ تعديل المهمة الرئيسية":"📁 مهمة رئيسية جديدة";
+  $("#pId").value=p?p.id:"";
+  $("#pTitle").value=p?p.title:"";
+  $("#pDesc").value=p?(p.desc||""):"";
+  selectedParentIcon=p?p.icon||"📁":"📁";
+  document.querySelectorAll("#pIconRow .btn").forEach(b=>{
+    b.style.outline=b.dataset.icon===selectedParentIcon?"2px solid var(--accent)":"";
+  });
+  $("#pDelete").style.display=p?"":"none";
+
+  // Show linkable tasks
+  const linked=p?new Set((p.subtasks||[]).filter(s=>typeof s==="string")):new Set();
+  const linkArea=$("#pLinkTasks");
+  const avail=tasks.filter(t=>t&&t.id&&t.status!=="done");
+  linkArea.innerHTML=avail.map(t=>
+    `<label style="display:flex;gap:8px;align-items:center;padding:4px 0;cursor:pointer;font-size:13px">
+      <input type="checkbox" class="plink-cb" value="${t.id}" ${linked.has(t.id)?"checked":""} style="accent-color:var(--accent)">
+      ${esc(t.title)} <span style="color:var(--muted);font-size:11px">(${STATUS[t.status]})</span>
+    </label>`
+  ).join("")||'<div style="color:var(--muted);font-size:13px">لا توجد مهام</div>';
+
+  $("#parentModal").classList.add("open");
+  setTimeout(()=>$("#pTitle").focus(),50);
+}
+
+$("#btnNewParent").onclick=()=>openParentModal(null);
+
+$("#pSave").onclick=()=>{
+  const title=$("#pTitle").value.trim();
+  if(!title){$("#pTitle").focus();return toast("اكتب عنوان المهمة الرئيسية");}
+  const id=$("#pId").value;
+  const checkedIds=[...document.querySelectorAll(".plink-cb:checked")].map(cb=>cb.value);
+
+  if(id){
+    const p=parentTasks.find(x=>x.id===id);
+    p.title=title;
+    p.desc=$("#pDesc").value.trim();
+    p.icon=selectedParentIcon;
+    // Update linked tasks — keep inline subtasks, replace linked ones
+    const inlineSubs=(p.subtasks||[]).filter(s=>typeof s!=="string");
+    p.subtasks=[...inlineSubs,...checkedIds];
+  } else {
+    parentTasks.push({
+      id:uid(), title, desc:$("#pDesc").value.trim(),
+      icon:selectedParentIcon, subtasks:checkedIds, created:Date.now()
+    });
+  }
+  saveParents(); renderParents();
+  $("#parentModal").classList.remove("open");
+  toast("تم الحفظ ✓");
+};
+
+$("#pDelete").onclick=()=>{
+  const id=$("#pId").value;
+  if(!confirm("حذف المهمة الرئيسية؟ (المهام الفرعية المرتبطة لن تُحذف)"))return;
+  parentTasks=parentTasks.filter(p=>p.id!==id);
+  saveParents(); renderParents();
+  $("#parentModal").classList.remove("open");
+  toast("تم الحذف");
+};
+
+// Firebase sync for parents
+if(useFirebase && parentTasksRef){
+  parentTasksRef.once("value",snap=>{
+    const data=snap.val();
+    if(data){
+      const arr=Array.isArray(data)?data:Object.values(data);
+      parentTasks=arr.filter(p=>p&&p.id);
+      localStorage.setItem(PARENT_KEY,JSON.stringify(parentTasks));
+      renderParents();
+    } else if(parentTasks.length){
+      saveParents();
+    }
+    parentTasksRef.on("value",snap2=>{
+      const d=snap2.val();
+      if(!d){parentTasks=[];} else {
+        const arr2=Array.isArray(d)?d:Object.values(d);
+        parentTasks=arr2.filter(p=>p&&p.id);
+      }
+      localStorage.setItem(PARENT_KEY,JSON.stringify(parentTasks));
+      renderParents();
+    });
+  });
+}
+
 /* ================= 1. تنبيهات المهام المتأخرة ================= */
 let alertDismissed = false;
 function updateAlerts(){
@@ -1447,6 +1839,7 @@ $("#closeQuickPanel").onclick=()=>$("#aiQuickPanel").classList.remove("show");
 /* ================= تشغيل ================= */
 populateAssigneeSelects();
 render();
+renderParents();
 updateAlerts();
 window.addEventListener("beforeunload",save);
 })();
