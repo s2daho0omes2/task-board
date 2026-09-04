@@ -917,6 +917,8 @@ function render(){
           ${t.status!=="done"
             ?`<button class="btn sm" data-done="${t.id}">تمّت</button>`
             :`<button class="btn sm" data-reopen="${t.id}">إعادة فتح</button>`}
+          <button class="btn sm ghost" data-to-parent="${t.id}" title="تحويل لمهمة رئيسية" style="opacity:.5">📁</button>
+          <button class="btn sm ghost" data-to-sub="${t.id}" title="إضافة لمهمة رئيسية" style="opacity:.5">🔗</button>
           <span class="spacer"></span>
           <span class="hint">Ctrl+Enter</span>
         </div>
@@ -1027,6 +1029,8 @@ document.addEventListener("click",e=>{
   if(d.edit)return openTask(d.edit);
   if(d.done){tasks.find(t=>t.id===d.done).status="done";save();render();return toast("اكتملت المهمة ✓");}
   if(d.reopen){tasks.find(t=>t.id===d.reopen).status="doing";save();render();return;}
+  if(d.toParent) return convertToParent(d.toParent);
+  if(d.toSub) return addToParent(d.toSub);
   if(d.delU){
     const[tid,uidv]=d.delU.split("|");
     if(!confirm("حذف هذا التحديث؟"))return;
@@ -1361,6 +1365,63 @@ if(useFirebase){
     }
   });
 } /* end useFirebase */
+
+/* ===== تحويل كرت لمهمة رئيسية / فرعية ===== */
+function convertToParent(tid){
+  const t=tasks.find(x=>x.id===tid);
+  if(!t) return;
+  // Check if already a parent
+  if(parentTasks.find(p=>p.title===t.title)) return toast("موجودة كمهمة رئيسية مسبقاً");
+  parentTasks.push({
+    id:uid(), title:t.title, desc:t.desc||"",
+    icon:"📁", subtasks:[], created:Date.now()
+  });
+  saveParents(); renderParents();
+  parentExpanded.add(parentTasks[parentTasks.length-1].id);
+  renderParents();
+  toast("تم تحويلها لمهمة رئيسية ✓ — أضف الفرعيات الآن");
+}
+
+function addToParent(tid){
+  if(!parentTasks.length) return toast("أنشئ مهمة رئيسية أولاً");
+  // Already linked?
+  const alreadyIn=parentTasks.find(p=>(p.subtasks||[]).includes(tid));
+  if(alreadyIn) return toast("مرتبطة بـ: "+alreadyIn.title);
+
+  if(parentTasks.length===1){
+    // Only one parent — link directly
+    const p=parentTasks[0];
+    if(!p.subtasks)p.subtasks=[];
+    p.subtasks.push(tid);
+    saveParents(); renderParents();
+    return toast("تم ربطها بـ: "+p.title+" ✓");
+  }
+
+  // Multiple parents — show picker
+  const overlay=document.createElement("div");
+  overlay.className="overlay open";
+  overlay.innerHTML=`<div class="modal" style="max-width:420px">
+    <h3>🔗 اختر المهمة الرئيسية</h3>
+    <div style="padding:8px 0">${parentTasks.map(p=>
+      `<button class="btn" data-pick-parent="${p.id}" style="display:block;width:100%;text-align:right;margin:4px 0;padding:12px 16px">
+        ${p.icon||"📁"} ${esc(p.title)}
+      </button>`
+    ).join("")}</div>
+    <div class="modal-actions"><button class="btn ghost" id="pickCancel">إلغاء</button></div>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector("#pickCancel").onclick=()=>overlay.remove();
+  overlay.addEventListener("click",e2=>{
+    const pick=e2.target.closest("[data-pick-parent]");
+    if(!pick)return;
+    const p=parentTasks.find(x=>x.id===pick.dataset.pickParent);
+    if(!p.subtasks)p.subtasks=[];
+    p.subtasks.push(tid);
+    saveParents(); renderParents();
+    overlay.remove();
+    toast("تم ربطها بـ: "+p.title+" ✓");
+  });
+}
 
 /* ================= المهام الرئيسية (Parent Tasks) ================= */
 const PARENT_KEY = "taskBoard.parents";
