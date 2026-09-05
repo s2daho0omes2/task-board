@@ -521,6 +521,25 @@
       </div>
     </div>
     <div class="field">
+      <label>نوع المهمة</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="taskTypeRow">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 14px;border-radius:10px;background:var(--panel-2);border:1px solid var(--line);flex:1;justify-content:center">
+          <input type="radio" name="tType" value="normal" checked style="accent-color:var(--accent)"> عادية
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 14px;border-radius:10px;background:var(--panel-2);border:1px solid var(--line);flex:1;justify-content:center">
+          <input type="radio" name="tType" value="parent" style="accent-color:var(--accent)"> 📁 رئيسية
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 14px;border-radius:10px;background:var(--panel-2);border:1px solid var(--line);flex:1;justify-content:center">
+          <input type="radio" name="tType" value="subtask" style="accent-color:var(--accent)"> 🔗 فرعية
+        </label>
+      </div>
+      <div id="parentPickerField" style="display:none;margin-top:8px">
+        <label style="font-size:.85rem;color:var(--muted);margin-bottom:4px;display:block">اختر المهمة الرئيسية</label>
+        <select id="tParentPicker" style="width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--text)">
+        </select>
+      </div>
+    </div>
+    <div class="field">
       <label>لون البطاقة</label>
       <div class="color-row" id="colorRow">
         <div class="color-dot active" data-c="none" title="بدون"></div>
@@ -1064,6 +1083,32 @@ document.getElementById("colorRow").addEventListener("click",e=>{
   selectedColor = dot.dataset.c;
 });
 
+/* نوع المهمة radio logic */
+document.querySelectorAll('input[name="tType"]').forEach(r=>{
+  r.addEventListener("change",()=>{
+    const v=document.querySelector('input[name="tType"]:checked').value;
+    $("#parentPickerField").style.display = v==="subtask" ? "" : "none";
+    if(v==="subtask") populateParentPicker();
+  });
+});
+function populateParentPicker(selectedPid){
+  const sel=$("#tParentPicker"); sel.innerHTML="";
+  if(!parentTasks.length){ sel.innerHTML='<option value="">لا توجد مهام رئيسية</option>'; return; }
+  parentTasks.forEach(p=>{
+    const o=document.createElement("option"); o.value=p.id; o.textContent="📁 "+p.title;
+    if(selectedPid && p.id===selectedPid) o.selected=true;
+    sel.appendChild(o);
+  });
+}
+function getTaskType(tid){
+  if(!tid) return "normal";
+  // is it a parent?
+  if(parentTasks.find(p=>p.id===tid || p.sourceTaskId===tid)) return "parent";
+  // is it a subtask?
+  for(const p of parentTasks){ if((p.subtasks||[]).includes(tid)) return {type:"subtask",parentId:p.id}; }
+  return "normal";
+}
+
 function openTask(id){
   const t=id?tasks.find(x=>x.id===id):null;
   $("#taskModalTitle").textContent=t?"تعديل المهمة":"مهمة جديدة";
@@ -1081,6 +1126,17 @@ function openTask(id){
   document.querySelectorAll(".color-dot").forEach(d=>{
     d.classList.toggle("active", d.dataset.c===selectedColor);
   });
+  // task type
+  let tType="normal", linkedPid="";
+  if(t){
+    const info=getTaskType(t.id);
+    if(info==="parent"){ tType="parent"; }
+    else if(typeof info==="object" && info.type==="subtask"){ tType="subtask"; linkedPid=info.parentId; }
+  }
+  document.querySelector(`input[name="tType"][value="${tType}"]`).checked=true;
+  $("#parentPickerField").style.display = tType==="subtask" ? "" : "none";
+  if(tType==="subtask") populateParentPicker(linkedPid);
+
   $("#taskModal").classList.add("open");
   setTimeout(()=>$("#tTitle").focus(),50);
 }
@@ -1098,7 +1154,39 @@ $("#tSave").onclick=()=>{
     tasks.push({id:uid(),num:maxNum+1,title,desc:$("#tDesc").value.trim(),status:$("#tStatus").value,
                 priority:$("#tPriority").value,color,deadline:$("#tDeadline").value||"",assignee:$("#tAssignee").value||"",created:Date.now(),updates:[]});
   }
-  save();render();$("#taskModal").classList.remove("open");toast("تم الحفظ ✓");
+  /* handle task type change */
+  const chosenType=document.querySelector('input[name="tType"]:checked').value;
+  const taskId=id||tasks[tasks.length-1].id;
+  const oldInfo=getTaskType(taskId);
+
+  // remove from old parent if was subtask
+  if(typeof oldInfo==="object" && oldInfo.type==="subtask"){
+    const oldP=parentTasks.find(p=>p.id===oldInfo.parentId);
+    if(oldP) oldP.subtasks=(oldP.subtasks||[]).filter(s=>s!==taskId);
+  }
+  // remove parent entry if was parent
+  if(oldInfo==="parent" && chosenType!=="parent"){
+    const pIdx=parentTasks.findIndex(p=>p.sourceTaskId===taskId);
+    if(pIdx>=0) parentTasks.splice(pIdx,1);
+  }
+
+  if(chosenType==="parent"){
+    if(!parentTasks.find(p=>p.sourceTaskId===taskId)){
+      parentTasks.push({id:uid(),title:$("#tTitle").value.trim(),subtasks:[],sourceTaskId:taskId});
+      parentExpanded.add(parentTasks[parentTasks.length-1].id);
+    }
+  } else if(chosenType==="subtask"){
+    const pid=$("#tParentPicker").value;
+    if(pid){
+      const p=parentTasks.find(x=>x.id===pid);
+      if(p && !(p.subtasks||[]).includes(taskId)){
+        if(!p.subtasks) p.subtasks=[];
+        p.subtasks.push(taskId);
+      }
+    }
+  }
+
+  saveParents();save();render();$("#taskModal").classList.remove("open");toast("تم الحفظ ✓");
 };
 $("#tDelete").onclick=()=>{
   const id=$("#tId").value;
