@@ -1397,6 +1397,37 @@ function fbToArray(data){
   }));
 }
 
+/* ================= المهام الرئيسية — early init ================= */
+const PARENT_KEY = "taskBoard.parents";
+const DEFAULT_PARENTS = [
+  {id:"grp_licenses",title:"الرخص والتصاريح",subtasks:["kymzp1lwulyw","s592fcdcyf4g","6h3jbt9vmte2fsbx","p4f1kp4zgwj6","anv9bbs915nj","m9iulyawmswztgfk"]},
+  {id:"grp_agreements",title:"الاتفاقيات والعقود",subtasks:["kfpe3er7vury","zboe20cwwga0","6tqlx7zpmswztgfk","xd0jgur8ybjy","e8sz29es2e6v"]},
+  {id:"grp_yanbu",title:"مشروع ينبع والهيئة الملكية",subtasks:["gvjkj3f4mt173xb7","nqxuxhjdhaa6","vpzyg1i9mswztgfk","yqwvmloov21h","1vpkt2p1zbl4"]},
+  {id:"grp_designs",title:"التصاميم والمخططات",subtasks:["bnu0iq1zmn81","orzwgr6kkad5","hdvgrybte2p3","zlsc33lymswztgfk"]},
+  {id:"grp_sales_hq",title:"مقر المبيعات والاستثمار",subtasks:["am38c5efw0cv","ufy4fa91mt86n9no","trs180ogqnex","i2vnqx63hcp0"]},
+  {id:"grp_aburayma",title:"متابعات أبو ريما",subtasks:["t70gh414yo4d","1235j8k175c8","x61pix2oayv6"]},
+  {id:"grp_finance",title:"المالية والمتابعات",subtasks:["lplnqkrjd2c9","ltlmjo9mmswztgfk","68tc8li0mszp4m17","wyohwa1lxx7r"]}
+];
+function loadParents(){
+  try{
+    const r=localStorage.getItem(PARENT_KEY);
+    if(r){
+      const parsed=JSON.parse(r);
+      if(parsed.length) return parsed;
+    }
+    localStorage.setItem(PARENT_KEY, JSON.stringify(DEFAULT_PARENTS));
+    return JSON.parse(JSON.stringify(DEFAULT_PARENTS));
+  }catch(e){return JSON.parse(JSON.stringify(DEFAULT_PARENTS));}
+}
+let parentTasks = loadParents();
+let parentExpanded = new Set();
+let parentTasksRef = useFirebase ? db.ref("parentTasks") : null;
+function getLinkedTaskIds(){
+  const ids=new Set();
+  parentTasks.forEach(p=>(p.subtasks||[]).forEach(s=>{if(typeof s==="string")ids.add(s);}));
+  return ids;
+}
+
 /* ================= Firebase real-time sync ================= */
 if(useFirebase){
   tasksRef.once("value", snap=>{
@@ -1511,32 +1542,6 @@ function addToParent(tid){
 }
 
 /* ================= المهام الرئيسية (Parent Tasks) ================= */
-const PARENT_KEY = "taskBoard.parents";
-let parentTasks = loadParents();
-let parentExpanded = new Set();
-let parentTasksRef = useFirebase ? db.ref("parentTasks") : null;
-
-const DEFAULT_PARENTS = [
-  {id:"grp_licenses",title:"الرخص والتصاريح",subtasks:["kymzp1lwulyw","s592fcdcyf4g","6h3jbt9vmte2fsbx","p4f1kp4zgwj6","anv9bbs915nj","m9iulyawmswztgfk"]},
-  {id:"grp_agreements",title:"الاتفاقيات والعقود",subtasks:["kfpe3er7vury","zboe20cwwga0","6tqlx7zpmswztgfk","xd0jgur8ybjy","e8sz29es2e6v"]},
-  {id:"grp_yanbu",title:"مشروع ينبع والهيئة الملكية",subtasks:["gvjkj3f4mt173xb7","nqxuxhjdhaa6","vpzyg1i9mswztgfk","yqwvmloov21h","1vpkt2p1zbl4"]},
-  {id:"grp_designs",title:"التصاميم والمخططات",subtasks:["bnu0iq1zmn81","orzwgr6kkad5","hdvgrybte2p3","zlsc33lymswztgfk"]},
-  {id:"grp_sales_hq",title:"مقر المبيعات والاستثمار",subtasks:["am38c5efw0cv","ufy4fa91mt86n9no","trs180ogqnex","i2vnqx63hcp0"]},
-  {id:"grp_aburayma",title:"متابعات أبو ريما",subtasks:["t70gh414yo4d","1235j8k175c8","x61pix2oayv6"]},
-  {id:"grp_finance",title:"المالية والمتابعات",subtasks:["lplnqkrjd2c9","ltlmjo9mmswztgfk","68tc8li0mszp4m17","wyohwa1lxx7r"]}
-];
-function loadParents(){
-  try{
-    const r=localStorage.getItem(PARENT_KEY);
-    if(r){
-      const parsed=JSON.parse(r);
-      if(parsed.length) return parsed;
-    }
-    // first load — use defaults and save
-    localStorage.setItem(PARENT_KEY, JSON.stringify(DEFAULT_PARENTS));
-    return JSON.parse(JSON.stringify(DEFAULT_PARENTS));
-  }catch(e){return JSON.parse(JSON.stringify(DEFAULT_PARENTS));}
-}
 function saveParents(){
   localStorage.setItem(PARENT_KEY, JSON.stringify(parentTasks));
   if(useFirebase && parentTasksRef){
@@ -1544,14 +1549,6 @@ function saveParents(){
     parentTasks.forEach(p=>{ if(p&&p.id) map[p.id]=p; });
     parentTasksRef.set(map).catch(err=>console.warn("Firebase parent write failed:",err));
   }
-}
-
-function getLinkedTaskIds(){
-  const ids=new Set();
-  if(typeof parentTasks!=="undefined" && parentTasks.length){
-    parentTasks.forEach(p=>(p.subtasks||[]).forEach(s=>{if(typeof s==="string")ids.add(s);}));
-  }
-  return ids;
 }
 
 function renderParents(){
