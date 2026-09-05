@@ -320,6 +320,10 @@
   /* ===== Parent Task (مهمة رئيسية) ===== */
   .parent-tasks{padding:0 18px;margin-top:12px}
   .parent-group{margin-bottom:24px}
+  .parent-group.drag-over .parent-card{outline:2px dashed var(--accent);outline-offset:4px;background:rgba(79,157,255,.06)}
+  .card[draggable="true"]{cursor:grab}
+  .card[draggable="true"]:active{cursor:grabbing}
+  .card.dragging{opacity:.4;transform:scale(.95)}
   .parent-card{
     background:var(--panel);border:2px solid var(--accent-2);border-radius:20px;
     box-shadow:0 8px 32px rgba(0,0,0,.4), 0 0 20px rgba(79,157,255,.08);
@@ -1573,7 +1577,7 @@ function renderParents(){
       const shown=ups.slice(0,2);
       const statusBarCls={new:'s-new-bar',doing:'s-doing-bar',wait:'s-wait-bar',done:'s-done-bar'};
       const statusEmoji={new:'🆕',doing:'⚡',wait:'⏸️',done:'✅'};
-      return `<div class="card ${t.status==="done"?"done":""} ${isStale(t)?"stale":""}" data-id="${t.id}">
+      return `<div class="card ${t.status==="done"?"done":""} ${isStale(t)?"stale":""}" data-id="${t.id}" draggable="true" data-drag-sub="${t.id}" data-drag-from="${p.id}">
         <div class="card-status-bar ${statusBarCls[t.status]||'s-new-bar'}">
           <span>${statusEmoji[t.status]||''} ${STATUS[t.status]}</span>
           <span style="opacity:.5">${t.num?'#'+t.num:''}</span>
@@ -1643,6 +1647,40 @@ function renderParents(){
       </div>
     </div>`;
   }).join("");
+
+  // Attach drag & drop listeners
+  area.querySelectorAll("[data-drag-sub]").forEach(card=>{
+    card.addEventListener("dragstart",e=>{
+      e.dataTransfer.setData("text/plain", JSON.stringify({taskId:card.dataset.dragSub, fromPid:card.dataset.dragFrom}));
+      e.dataTransfer.effectAllowed="move";
+      card.classList.add("dragging");
+    });
+    card.addEventListener("dragend",()=>card.classList.remove("dragging"));
+  });
+
+  area.querySelectorAll(".parent-group").forEach(group=>{
+    const pid=group.querySelector(".parent-card")?.dataset.pid;
+    group.addEventListener("dragover",e=>{e.preventDefault();e.dataTransfer.dropEffect="move";group.classList.add("drag-over");});
+    group.addEventListener("dragleave",e=>{if(!group.contains(e.relatedTarget))group.classList.remove("drag-over");});
+    group.addEventListener("drop",e=>{
+      e.preventDefault(); group.classList.remove("drag-over");
+      try{
+        const {taskId,fromPid}=JSON.parse(e.dataTransfer.getData("text/plain"));
+        if(fromPid===pid) return; // same parent
+        // remove from old parent
+        const oldP=parentTasks.find(p=>p.id===fromPid);
+        if(oldP) oldP.subtasks=(oldP.subtasks||[]).filter(s=>s!==taskId);
+        // add to new parent
+        const newP=parentTasks.find(p=>p.id===pid);
+        if(newP){
+          if(!newP.subtasks) newP.subtasks=[];
+          if(!newP.subtasks.includes(taskId)) newP.subtasks.push(taskId);
+        }
+        saveParents(); render(); renderParents();
+        toast("تم نقل المهمة ✓");
+      }catch(err){}
+    });
+  });
 }
 
 // Toggle parent expand/collapse
