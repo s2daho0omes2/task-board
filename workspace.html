@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مساحة العمل</title>
+<style>
+:root{
+  --bg:#0e1116;--panel:#161b22;--panel-2:#1c232c;--line:#2a323d;
+  --text:#e6edf3;--muted:#8b949e;--accent:#4f9dff;--accent-2:#2f6fd0;
+  --green:#3fb950;--amber:#d29922;--red:#f85149;--radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;scrollbar-width:none}
+*::-webkit-scrollbar{display:none}
+body{background:var(--bg);color:var(--text);font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",Arial,sans-serif;font-size:15px;line-height:1.7;height:100vh;overflow:hidden}
+
+.workspace{display:flex;height:100vh;gap:0}
+.divider{width:6px;background:var(--line);cursor:col-resize;flex-shrink:0;position:relative;z-index:10}
+.divider:hover,.divider.active{background:var(--accent)}
+.divider::after{content:"⋮";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--muted);font-size:18px}
+
+/* Task board panel */
+.panel-board{flex:1;min-width:300px;overflow:hidden}
+.panel-board iframe{width:100%;height:100%;border:none}
+
+/* Calendar panel */
+.panel-cal{width:420px;min-width:320px;max-width:600px;display:flex;flex-direction:column;border-right:1px solid var(--line);background:var(--bg)}
+
+.cal-header{padding:16px 20px;border-bottom:1px solid var(--line);background:var(--panel);display:flex;align-items:center;gap:12px;flex-shrink:0}
+.cal-header h2{font-size:18px;flex:1}
+.cal-nav{display:flex;gap:6px}
+.cal-nav button{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:6px 12px;color:var(--text);font-size:14px}
+.cal-nav button:hover{background:var(--accent-2);border-color:var(--accent)}
+.cal-nav button.today-btn{background:var(--accent);border-color:var(--accent);font-weight:700}
+
+/* Mini calendar */
+.mini-cal{padding:12px 20px;border-bottom:1px solid var(--line);flex-shrink:0}
+.mini-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;font-size:13px}
+.mini-cal-grid .day-name{color:var(--muted);font-size:11px;padding:4px 0}
+.mini-cal-grid .day{padding:6px 4px;border-radius:8px;cursor:pointer}
+.mini-cal-grid .day:hover{background:var(--panel-2)}
+.mini-cal-grid .day.today{background:var(--accent);color:#fff;font-weight:700}
+.mini-cal-grid .day.selected{outline:2px solid var(--accent);outline-offset:-2px}
+.mini-cal-grid .day.other-month{opacity:.3}
+.mini-cal-grid .day.has-entries{position:relative}
+.mini-cal-grid .day.has-entries::after{content:"";position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--green)}
+
+/* Selected day */
+.day-title{padding:14px 20px 8px;font-size:16px;font-weight:700;border-bottom:1px solid var(--line);flex-shrink:0;display:flex;align-items:center;gap:8px}
+.day-title .date-str{flex:1}
+.day-title .count{font-size:12px;color:var(--muted);font-weight:400}
+
+/* Entries list */
+.entries{flex:1;overflow-y:auto;padding:12px 20px}
+.entry{background:var(--panel);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;border:1px solid var(--line)}
+.entry .time{font-size:12px;color:var(--accent);font-weight:600;margin-bottom:4px}
+.entry .text{font-size:14px;line-height:1.6;white-space:pre-wrap}
+.entry .actions{display:flex;gap:6px;margin-top:8px;justify-content:flex-end}
+.entry .actions button{background:none;border:none;color:var(--muted);font-size:13px;padding:4px 8px;border-radius:6px}
+.entry .actions button:hover{background:var(--panel-2);color:var(--text)}
+.no-entries{text-align:center;padding:40px 20px;color:var(--muted)}
+.no-entries .icon{font-size:40px;margin-bottom:10px}
+
+/* Input area */
+.input-area{padding:14px 20px;border-top:1px solid var(--line);background:var(--panel);flex-shrink:0}
+.input-row{display:flex;gap:8px}
+.input-row textarea{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;color:var(--text);resize:none;min-height:44px;max-height:120px;font-size:14px}
+.input-row textarea:focus{outline:none;border-color:var(--accent)}
+.input-row button{background:var(--accent);border:none;border-radius:10px;padding:10px 18px;color:#fff;font-weight:700;font-size:14px;white-space:nowrap}
+.input-row button:hover{background:var(--accent-2)}
+
+/* Stats bar */
+.stats-bar{padding:10px 20px;border-top:1px solid var(--line);background:var(--panel);font-size:12px;color:var(--muted);display:flex;gap:16px;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="workspace">
+  <!-- Calendar Panel (Right) -->
+  <div class="panel-cal" id="calPanel">
+    <div class="cal-header">
+      <h2>📅 تقويم الأعمال</h2>
+      <div class="cal-nav">
+        <button onclick="navMonth(-1)">◀</button>
+        <button class="today-btn" onclick="goToday()">اليوم</button>
+        <button onclick="navMonth(1)">▶</button>
+      </div>
+    </div>
+    <div class="mini-cal" id="miniCal"></div>
+    <div class="day-title">
+      <span class="date-str" id="dayTitle"></span>
+      <span class="count" id="dayCount"></span>
+    </div>
+    <div class="entries" id="entriesList"></div>
+    <div class="input-area">
+      <div class="input-row">
+        <textarea id="entryInput" placeholder="اكتب ما أنجزته..." rows="1"></textarea>
+        <button onclick="addEntry()">+ أضف</button>
+      </div>
+    </div>
+    <div class="stats-bar">
+      <span id="statToday"></span>
+      <span id="statMonth"></span>
+    </div>
+  </div>
+
+  <!-- Resizable divider -->
+  <div class="divider" id="divider"></div>
+
+  <!-- Task Board Panel (Left) -->
+  <div class="panel-board" id="boardPanel">
+    <iframe src="task-board-personal.html" id="boardFrame"></iframe>
+  </div>
+</div>
+
+<script>
+/* ===== Firebase Setup ===== */
+const FB_URL = "https://task-board-d3f90-default-rtdb.firebaseio.com";
+const LOG_KEY = "workLog";
+
+/* ===== State ===== */
+let viewDate = new Date();
+let selectedDate = new Date();
+let entries = loadEntries();
+
+function dateKey(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function loadEntries(){ try{return JSON.parse(localStorage.getItem(LOG_KEY))||{};}catch(e){return{};} }
+function saveEntries(){ localStorage.setItem(LOG_KEY, JSON.stringify(entries)); }
+
+/* ===== Mini Calendar ===== */
+function renderCal(){
+  const y=viewDate.getFullYear(), m=viewDate.getMonth();
+  const first=new Date(y,m,1), last=new Date(y,m+1,0);
+  const startDay=first.getDay(); // 0=Sun
+  const daysInMonth=last.getDate();
+  const todayKey=dateKey(new Date());
+  const selKey=dateKey(selectedDate);
+
+  const names=["أحد","اثن","ثلا","أرب","خمي","جمع","سبت"];
+  let html=names.map(n=>`<div class="day-name">${n}</div>`).join("");
+
+  // prev month fill
+  const prevLast=new Date(y,m,0).getDate();
+  for(let i=startDay-1;i>=0;i--){
+    html+=`<div class="day other-month">${prevLast-i}</div>`;
+  }
+
+  for(let d=1;d<=daysInMonth;d++){
+    const dk=dateKey(new Date(y,m,d));
+    const cls=["day"];
+    if(dk===todayKey) cls.push("today");
+    if(dk===selKey) cls.push("selected");
+    if(entries[dk]&&entries[dk].length) cls.push("has-entries");
+    html+=`<div class="${cls.join(" ")}" data-date="${dk}" onclick="selectDay('${dk}')">${d}</div>`;
+  }
+
+  // next month fill
+  const totalCells=startDay+daysInMonth;
+  const remaining=7-(totalCells%7);
+  if(remaining<7){
+    for(let i=1;i<=remaining;i++){
+      html+=`<div class="day other-month">${i}</div>`;
+    }
+  }
+
+  const monthNames=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+  document.getElementById("miniCal").innerHTML=
+    `<div style="text-align:center;margin-bottom:8px;font-weight:700;font-size:15px">${monthNames[m]} ${y}</div>`+
+    `<div class="mini-cal-grid">${html}</div>`;
+}
+
+function selectDay(dk){
+  const [y,m,d]=dk.split("-").map(Number);
+  selectedDate=new Date(y,m-1,d);
+  renderCal();
+  renderEntries();
+}
+
+function navMonth(dir){
+  viewDate.setMonth(viewDate.getMonth()+dir);
+  renderCal();
+}
+
+function goToday(){
+  viewDate=new Date();
+  selectedDate=new Date();
+  renderCal();
+  renderEntries();
+}
+
+/* ===== Entries ===== */
+function renderEntries(){
+  const dk=dateKey(selectedDate);
+  const dayEntries=(entries[dk]||[]).sort((a,b)=>b.at-a.at);
+
+  const days=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+  const monthNames=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+  const d=selectedDate;
+  document.getElementById("dayTitle").textContent=
+    `${days[d.getDay()]} ${d.getDate()} ${monthNames[d.getMonth()]}`;
+  document.getElementById("dayCount").textContent=
+    dayEntries.length?`${dayEntries.length} إنجاز`:"";
+
+  const list=document.getElementById("entriesList");
+  if(!dayEntries.length){
+    list.innerHTML=`<div class="no-entries"><div class="icon">📝</div>لا توجد إنجازات لهذا اليوم<br><span style="font-size:13px">اكتب ما أنجزته بالأسفل</span></div>`;
+    updateStats();
+    return;
+  }
+
+  list.innerHTML=dayEntries.map(e=>{
+    const t=new Date(e.at);
+    const time=String(t.getHours()).padStart(2,"0")+":"+String(t.getMinutes()).padStart(2,"0");
+    return `<div class="entry">
+      <div class="time">🕐 ${time}</div>
+      <div class="text">${esc(e.text)}</div>
+      <div class="actions">
+        <button onclick="editEntry('${dk}','${e.id}')">✎ تعديل</button>
+        <button onclick="deleteEntry('${dk}','${e.id}')">✕ حذف</button>
+      </div>
+    </div>`;
+  }).join("");
+  updateStats();
+}
+
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+function addEntry(){
+  const input=document.getElementById("entryInput");
+  const text=input.value.trim();
+  if(!text) return input.focus();
+
+  const dk=dateKey(selectedDate);
+  if(!entries[dk]) entries[dk]=[];
+
+  const now=new Date();
+  // If selected date is today, use current time. Otherwise use noon of that day.
+  const isToday=dateKey(now)===dk;
+  const at=isToday?now.getTime():new Date(selectedDate.getFullYear(),selectedDate.getMonth(),selectedDate.getDate(),12,0).getTime();
+
+  entries[dk].push({
+    id:Math.random().toString(36).substr(2,10),
+    text,
+    at
+  });
+  saveEntries();
+  input.value="";
+  renderCal();
+  renderEntries();
+}
+
+function deleteEntry(dk,id){
+  if(!confirm("حذف هذا الإنجاز؟")) return;
+  entries[dk]=(entries[dk]||[]).filter(e=>e.id!==id);
+  if(!entries[dk].length) delete entries[dk];
+  saveEntries();
+  renderCal();
+  renderEntries();
+}
+
+function editEntry(dk,id){
+  const entry=(entries[dk]||[]).find(e=>e.id===id);
+  if(!entry) return;
+  const newText=prompt("عدّل النص:",entry.text);
+  if(newText===null) return;
+  if(!newText.trim()) return;
+  entry.text=newText.trim();
+  saveEntries();
+  renderEntries();
+}
+
+/* ===== Stats ===== */
+function updateStats(){
+  const todayKey=dateKey(new Date());
+  const todayCount=(entries[todayKey]||[]).length;
+  document.getElementById("statToday").textContent=`📌 اليوم: ${todayCount} إنجاز`;
+
+  const y=selectedDate.getFullYear(), m=selectedDate.getMonth();
+  let monthCount=0;
+  for(const dk in entries){
+    const [ey,em]=dk.split("-").map(Number);
+    if(ey===y&&em-1===m) monthCount+=entries[dk].length;
+  }
+  document.getElementById("statMonth").textContent=`📊 الشهر: ${monthCount} إنجاز`;
+}
+
+/* ===== Keyboard shortcut ===== */
+document.getElementById("entryInput").addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();addEntry();}
+});
+
+/* ===== Auto-resize textarea ===== */
+document.getElementById("entryInput").addEventListener("input",function(){
+  this.style.height="auto";
+  this.style.height=Math.min(this.scrollHeight,120)+"px";
+});
+
+/* ===== Resizable divider ===== */
+const divider=document.getElementById("divider");
+const calPanel=document.getElementById("calPanel");
+let isDragging=false;
+divider.addEventListener("mousedown",e=>{isDragging=true;divider.classList.add("active");e.preventDefault();});
+document.addEventListener("mousemove",e=>{
+  if(!isDragging)return;
+  const w=Math.max(320,Math.min(600,e.clientX));
+  calPanel.style.width=w+"px";
+});
+document.addEventListener("mouseup",()=>{isDragging=false;divider.classList.remove("active");});
+
+/* ===== Init ===== */
+renderCal();
+renderEntries();
+</script>
+</body>
+</html>
