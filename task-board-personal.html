@@ -1964,28 +1964,19 @@ $("#pDelete").onclick=()=>{
   toast("تم الحذف");
 };
 
-// Firebase sync for parents
+// Firebase sync for parents (wrapped in try/catch — Firebase rules may block access)
 if(useFirebase && parentTasksRef){
-  parentTasksRef.once("value",snap=>{
-    const data=snap.val();
-    if(data){
-      const arr=Array.isArray(data)?data:Object.values(data);
-      parentTasks=arr.filter(p=>p&&p.id);
-      localStorage.setItem(PARENT_KEY,JSON.stringify(parentTasks));
-      renderParents();
-    } else if(parentTasks.length){
-      saveParents();
-    }
-    parentTasksRef.on("value",snap2=>{
-      const d=snap2.val();
-      if(!d){parentTasks=[];} else {
-        const arr2=Array.isArray(d)?d:Object.values(d);
-        parentTasks=arr2.filter(p=>p&&p.id);
+  try{
+    parentTasksRef.once("value",snap=>{
+      const data=snap.val();
+      if(data){
+        const arr=Array.isArray(data)?data:Object.values(data);
+        parentTasks=arr.filter(p=>p&&p.id);
+        localStorage.setItem(PARENT_KEY,JSON.stringify(parentTasks));
+        renderParents();
       }
-      localStorage.setItem(PARENT_KEY,JSON.stringify(parentTasks));
-      renderParents();
-    });
-  });
+    }).catch(()=>{});
+  }catch(e){}
 }
 
 /* ================= 1. تنبيهات المهام المتأخرة ================= */
