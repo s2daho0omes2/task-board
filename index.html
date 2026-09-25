@@ -2220,6 +2220,21 @@ function normalizeWL(raw){
 
 function seedWL(){
   let changed=false;
+  // migrate old localStorage data to Firebase
+  try{
+    const old=JSON.parse(localStorage.getItem("workLog"));
+    if(old&&typeof old==="object"){
+      for(const d in old){
+        const arr=Array.isArray(old[d])?old[d]:Object.values(old[d]);
+        if(!wlData[d])wlData[d]=[];
+        arr.filter(e=>e&&e.id).forEach(e=>{
+          if(!wlData[d].find(x=>x.id===e.id)){wlData[d].push(e);changed=true;}
+        });
+      }
+      localStorage.removeItem("workLog");
+    }
+  }catch(e){}
+  // seed default entries
   for(const d in WL_SEED){
     if(!wlData[d]){wlData[d]=[];changed=true;}
     WL_SEED[d].forEach(se=>{
