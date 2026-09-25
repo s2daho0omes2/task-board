@@ -321,6 +321,13 @@
   .parent-tasks{padding:0 18px;margin-top:12px}
   .parent-group{margin-bottom:24px}
   .parent-group.drag-over .parent-card{outline:2px dashed var(--accent);outline-offset:4px;background:rgba(79,157,255,.06)}
+  .archived-group{opacity:.6}
+  .archive-separator{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;margin:24px 0 12px;background:var(--panel);border:1px solid var(--green);border-radius:var(--radius);cursor:pointer;color:var(--green);font-weight:700;font-size:14px}
+  .archive-separator:hover{background:rgba(63,185,80,.08)}
+  .archive-arrow{transition:transform .2s}
+  #archivedParents.collapsed{display:none}
+  #archivedParents.collapsed+.archive-separator .archive-arrow,
+  .archive-separator:has(+#archivedParents.collapsed) .archive-arrow{transform:rotate(-90deg)}
   .card[draggable="true"]{cursor:grab}
   .card[draggable="true"]:active{cursor:grabbing}
   .card.dragging{opacity:.4;transform:scale(.95)}
@@ -1648,7 +1655,8 @@ function renderParents(){
   const area=$("#parentTasksArea");
   if(!parentTasks.length){ area.innerHTML=""; return; }
 
-  area.innerHTML = parentTasks.map(p=>{
+  const activeGroups=[], archivedGroups=[];
+  parentTasks.forEach(p=>{
     const linkedIds=(p.subtasks||[]).filter(s=>typeof s==="string");
     const inlineSubs=(p.subtasks||[]).filter(s=>typeof s!=="string");
     const linkedTasks=linkedIds.map(id=>tasks.find(t=>t.id===id)).filter(Boolean);
@@ -1656,6 +1664,19 @@ function renderParents(){
     const total=allSubs.length;
     const doneCount=allSubs.filter(s=>s.done).length;
     const pct=total?Math.round((doneCount/total)*100):0;
+    if(total>0&&pct===100) archivedGroups.push(p);
+    else activeGroups.push(p);
+  });
+
+  area.innerHTML = activeGroups.concat(archivedGroups).map(p=>{
+    const linkedIds=(p.subtasks||[]).filter(s=>typeof s==="string");
+    const inlineSubs=(p.subtasks||[]).filter(s=>typeof s!=="string");
+    const linkedTasks=linkedIds.map(id=>tasks.find(t=>t.id===id)).filter(Boolean);
+    const allSubs=[...linkedTasks.map(t=>({done:t.status==="done"})),...inlineSubs];
+    const total=allSubs.length;
+    const doneCount=allSubs.filter(s=>s.done).length;
+    const pct=total?Math.round((doneCount/total)*100):0;
+    const isArchived=total>0&&pct===100;
     const isOpen=parentExpanded.has(p.id);
     const pctColor=pct>=100?"var(--green)":pct>50?"var(--accent)":"var(--amber)";
 
@@ -1702,10 +1723,11 @@ function renderParents(){
       </div>`;
     }).join("");
 
-    return `<div class="parent-group">
+    return `${isArchived&&archivedGroups[0]===p?`<div class="archive-separator" onclick="document.getElementById('archivedParents').classList.toggle('collapsed')"><span>✅ مجلدات مكتملة (${archivedGroups.length})</span><span class="archive-arrow">▼</span></div><div id="archivedParents" class="collapsed">`:""}
+    <div class="parent-group ${isArchived?"archived-group":""}">
       <div class="parent-card" data-pid="${p.id}">
-        <div class="parent-status-bar">
-          <span>📁 مهمة رئيسية</span>
+        <div class="parent-status-bar" style="${isArchived?"background:var(--green);color:#fff":""}">
+          <span>${isArchived?"✅ مكتملة":"📁 مهمة رئيسية"}</span>
           <span>${doneCount}/${total} مكتملة</span>
         </div>
         <div class="parent-head" data-ptoggle="${p.id}">
@@ -1734,7 +1756,7 @@ function renderParents(){
         <input placeholder="أضف مهمة فرعية سريعة..." data-padd-input="${p.id}">
         <button class="btn sm primary" data-padd="${p.id}">+ إضافة</button>
       </div>
-    </div>`;
+    </div>${isArchived&&archivedGroups[archivedGroups.length-1]===p?"</div>":""}`;
   }).join("");
 
   // Attach drag & drop listeners
