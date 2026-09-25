@@ -1451,9 +1451,9 @@ const PARENT_KEY = "taskBoard.parents";
 const DEFAULT_PARENTS = [
   {id:"grp_licenses",title:"الرخص والتصاريح",subtasks:["kymzp1lwulyw","s592fcdcyf4g","6h3jbt9vmte2fsbx","p4f1kp4zgwj6","anv9bbs915nj","m9iulyawmswztgfk"]},
   {id:"grp_agreements",title:"الاتفاقيات والعقود",subtasks:["kfpe3er7vury","zboe20cwwga0","6tqlx7zpmswztgfk","xd0jgur8ybjy","e8sz29es2e6v"]},
-  {id:"grp_yanbu",title:"مشروع ينبع والهيئة الملكية",subtasks:["gvjkj3f4mt173xb7","nqxuxhjdhaa6","vpzyg1i9mswztgfk","yqwvmloov21h","1vpkt2p1zbl4","ef4593a655844214"]},
-  {id:"grp_designs",title:"التصاميم والمخططات",subtasks:["bnu0iq1zmn81","orzwgr6kkad5","hdvgrybte2p3","zlsc33lymswztgfk","d9ea2bb38225490d","fa4f729331264d74"]},
-  {id:"grp_sales_hq",title:"مقر المبيعات والاستثمار",subtasks:["am38c5efw0cv","ufy4fa91mt86n9no","trs180ogqnex","i2vnqx63hcp0","6ebe7f87dd28446c"]},
+  {id:"grp_yanbu",title:"مشروع ينبع والهيئة الملكية",subtasks:["gvjkj3f4mt173xb7","nqxuxhjdhaa6","vpzyg1i9mswztgfk","yqwvmloov21h","1vpkt2p1zbl4","ef4593a655844214","09424145b01d462d","2561cf7acc4d411a"]},
+  {id:"grp_designs",title:"التصاميم والمخططات",subtasks:["bnu0iq1zmn81","orzwgr6kkad5","hdvgrybte2p3","zlsc33lymswztgfk","d9ea2bb38225490d","fa4f729331264d74","f1c3aac29b874e0c","a8b283c4babc4e1d","7f1773141a7e4b56"]},
+  {id:"grp_sales_hq",title:"مقر المبيعات والاستثمار",subtasks:["am38c5efw0cv","ufy4fa91mt86n9no","trs180ogqnex","i2vnqx63hcp0","6ebe7f87dd28446c","55b3ec661c294157"]},
   {id:"grp_aburayma",title:"متابعات أبو ريما",subtasks:["t70gh414yo4d","1235j8k175c8","x61pix2oayv6"]},
   {id:"grp_finance",title:"المالية والمتابعات",subtasks:["lplnqkrjd2c9","ltlmjo9mmswztgfk","68tc8li0mszp4m17","wyohwa1lxx7r"]}
 ];
@@ -2190,10 +2190,42 @@ window.addEventListener("beforeunload",save);
 
 <script>
 (function(){
-const WL_KEY="workLog";
-let wlDate=new Date(), wlSelDate=new Date(), wlData=loadWL();
-function loadWL(){try{return JSON.parse(localStorage.getItem(WL_KEY))||{};}catch(e){return{};}}
-function saveWL(){localStorage.setItem(WL_KEY,JSON.stringify(wlData));}
+const WL_SEED={
+  "2026-09-27":[
+    {id:"s1",text:"✅ إرسال إيميل مشروع جبين – مواصفات الوحدة (محمد فاروق عودة)",at:1727434800000},
+    {id:"s2",text:"✅ إرسال إيميل بشأن حضور مكتب طلال عشقان (خالد خطاب)",at:1727434860000},
+    {id:"s3",text:"✅ إرسال إيميل تسليم مخططات البنية التحتية لحيي النواة والبثنة (وسيم فرح)",at:1727434920000},
+    {id:"s4",text:"✅ إرسال تذكير محاضر استلام المواقع مشروع ينبع 1 (معاذ نبيل)",at:1727434980000}
+  ],
+  "2026-09-28":[
+    {id:"s5",text:"✅ إرسال إيميل اعتماد تصميم أسوار العزيزية والنخيل (معاذ نبيل وخالد خطاب)",at:1727521200000},
+    {id:"s6",text:"✅ إرسال إيميل استلام المقر – مركز المبيعات (إيهاب المتولي)",at:1727521260000},
+    {id:"s7",text:"✅ إرسال إيميل إطلاق مشروع ينبع 1 على منصة سكني (وسيم فرح)",at:1727521320000}
+  ]
+};
+const wlRef=firebase.database().ref("tasks/workLogData");
+let wlDate=new Date(), wlSelDate=new Date(), wlData={};
+let wlLoaded=false;
+
+// seed entries to Firebase if missing
+function seedWL(){
+  for(const d in WL_SEED){
+    if(!wlData[d])wlData[d]=[];
+    WL_SEED[d].forEach(se=>{
+      if(!wlData[d].find(e=>e.id===se.id)){wlData[d].push(se);}
+    });
+  }
+  wlRef.set(wlData).catch(()=>{});
+}
+
+// listen for real-time updates from Firebase
+wlRef.on("value",snap=>{
+  wlData=snap.val()||{};
+  if(!wlLoaded){wlLoaded=true;seedWL();}
+  if(document.getElementById("wlPanel").classList.contains("open")){wlRenderCal();wlRenderEntries();}
+});
+
+function saveWL(){wlRef.set(wlData).catch(()=>{});}
 function dk(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 
