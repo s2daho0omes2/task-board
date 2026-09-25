@@ -2207,20 +2207,30 @@ const wlRef=firebase.database().ref("tasks/workLogData");
 let wlDate=new Date(), wlSelDate=new Date(), wlData={};
 let wlLoaded=false;
 
-// seed entries to Firebase if missing
-function seedWL(){
-  for(const d in WL_SEED){
-    if(!wlData[d])wlData[d]=[];
-    WL_SEED[d].forEach(se=>{
-      if(!wlData[d].find(e=>e.id===se.id)){wlData[d].push(se);}
-    });
+function normalizeWL(raw){
+  const out={};
+  if(!raw||typeof raw!=="object")return out;
+  for(const k in raw){
+    const v=raw[k];
+    if(Array.isArray(v)) out[k]=v.filter(e=>e&&e.id);
+    else if(v&&typeof v==="object") out[k]=Object.values(v).filter(e=>e&&e.id);
   }
-  wlRef.set(wlData).catch(()=>{});
+  return out;
 }
 
-// listen for real-time updates from Firebase
+function seedWL(){
+  let changed=false;
+  for(const d in WL_SEED){
+    if(!wlData[d]){wlData[d]=[];changed=true;}
+    WL_SEED[d].forEach(se=>{
+      if(!wlData[d].find(e=>e.id===se.id)){wlData[d].push(se);changed=true;}
+    });
+  }
+  if(changed)wlRef.set(wlData).catch(()=>{});
+}
+
 wlRef.on("value",snap=>{
-  wlData=snap.val()||{};
+  wlData=normalizeWL(snap.val());
   if(!wlLoaded){wlLoaded=true;seedWL();}
   if(document.getElementById("wlPanel").classList.contains("open")){wlRenderCal();wlRenderEntries();}
 });
