@@ -716,7 +716,7 @@ try {
     db.goOnline(); // تأكيد الاتصال
     tasksRef = db.ref("tasks");
     peopleRef = db.ref("people");
-    configRef = db.ref("config");
+    configRef = db.ref("tasks/configData");
     useFirebase = true;
     // تفعيل الحفظ المحلي لـ Firebase (يشتغل بدون إنترنت)
     try{ firebase.database().ref().keepSynced && db.ref("tasks").keepSynced(true); }catch(e){}
@@ -1299,8 +1299,23 @@ $("#fileIn").onchange=e=>{
 };
 
 /* ================= ربط الـ AI ================= */
-function cfg(){try{return JSON.parse(localStorage.getItem(CFG)||"{}") }catch(e){return{};}}
-function setCfg(o){localStorage.setItem(CFG,JSON.stringify(o));}
+let cfgData={};
+function cfg(){return cfgData;}
+function setCfg(o){
+  cfgData=o;
+  if(useFirebase&&configRef) configRef.set(o).catch(()=>{});
+}
+// migrate and load config from Firebase
+if(useFirebase&&configRef){
+  configRef.once("value",snap=>{
+    const d=snap.val();
+    if(d&&typeof d==="object"){cfgData=d;}
+    else{
+      try{const old=JSON.parse(localStorage.getItem(CFG)||"{}");if(Object.keys(old).length){cfgData=old;configRef.set(old).catch(()=>{});}}catch(e){}
+    }
+    localStorage.removeItem(CFG);
+  });
+}
 
 let provider = "claude";
 const PROVIDERS = {
@@ -1457,20 +1472,52 @@ const DEFAULT_PARENTS = [
   {id:"grp_aburayma",title:"متابعات أبو ريما",subtasks:["t70gh414yo4d","1235j8k175c8","x61pix2oayv6"]},
   {id:"grp_finance",title:"المالية والمتابعات",subtasks:["lplnqkrjd2c9","ltlmjo9mmswztgfk","68tc8li0mszp4m17","wyohwa1lxx7r"]}
 ];
-function loadParents(){
-  try{
-    const r=localStorage.getItem(PARENT_KEY);
-    if(r){
-      const parsed=JSON.parse(r);
-      if(parsed.length) return parsed;
-    }
-    localStorage.setItem(PARENT_KEY, JSON.stringify(DEFAULT_PARENTS));
-    return JSON.parse(JSON.stringify(DEFAULT_PARENTS));
-  }catch(e){return JSON.parse(JSON.stringify(DEFAULT_PARENTS));}
-}
-let parentTasks = loadParents();
+let parentTasks = JSON.parse(JSON.stringify(DEFAULT_PARENTS));
 let parentExpanded = new Set();
-let parentTasksRef = useFirebase ? db.ref("parentTasks") : null;
+let parentTasksRef = useFirebase ? db.ref("tasks/parentTasksData") : null;
+let parentLoaded = false;
+
+if(useFirebase && parentTasksRef){
+  parentTasksRef.on("value", snap=>{
+    const d=snap.val();
+    if(d&&typeof d==="object"){
+      const arr=Array.isArray(d)?d:Object.values(d);
+      const valid=arr.filter(p=>p&&p.id);
+      if(valid.length) parentTasks=valid;
+    }
+    if(!parentLoaded){
+      parentLoaded=true;
+      // migrate localStorage data to Firebase
+      try{
+        const old=localStorage.getItem(PARENT_KEY);
+        if(old){
+          const parsed=JSON.parse(old);
+          if(parsed&&parsed.length){
+            // merge: keep Firebase entries, add any missing from localStorage
+            const fbIds=new Set(parentTasks.map(p=>p.id));
+            parsed.forEach(p=>{
+              if(p&&p.id&&!fbIds.has(p.id)){parentTasks.push(p);}
+              else if(p&&p.id){
+                // merge subtasks
+                const fb=parentTasks.find(x=>x.id===p.id);
+                if(fb)(p.subtasks||[]).forEach(s=>{if(!fb.subtasks.includes(s))fb.subtasks.push(s);});
+              }
+            });
+            saveParents();
+          }
+          localStorage.removeItem(PARENT_KEY);
+        }
+      }catch(e){}
+      // seed defaults if Firebase was empty
+      if(!parentTasks.length||parentTasks.every(p=>!p.subtasks||!p.subtasks.length)){
+        parentTasks=JSON.parse(JSON.stringify(DEFAULT_PARENTS));
+        saveParents();
+      }
+    }
+    if(typeof renderParents==="function")renderParents();
+    if(typeof render==="function")debouncedRender();
+  });
+}
 function getLinkedTaskIds(){
   const ids=new Set();
   parentTasks.forEach(p=>(p.subtasks||[]).forEach(s=>{if(typeof s==="string")ids.add(s);}));
@@ -1517,9 +1564,7 @@ if(useFirebase){
 
   configRef.on("value", snap=>{
     const d=snap.val();
-    if(d&&typeof d==="object"){
-      localStorage.setItem(CFG,JSON.stringify(d));
-    }
+    if(d&&typeof d==="object"){cfgData=d;}
   });
 
   const connRef = db.ref(".info/connected");
@@ -1592,7 +1637,6 @@ function addToParent(tid){
 
 /* ================= المهام الرئيسية (Parent Tasks) ================= */
 function saveParents(){
-  localStorage.setItem(PARENT_KEY, JSON.stringify(parentTasks));
   if(useFirebase && parentTasksRef){
     const map={};
     parentTasks.forEach(p=>{ if(p&&p.id) map[p.id]=p; });
@@ -1964,20 +2008,6 @@ $("#pDelete").onclick=()=>{
   toast("تم الحذف");
 };
 
-// Firebase sync for parents (wrapped in try/catch — Firebase rules may block access)
-if(useFirebase && parentTasksRef){
-  try{
-    parentTasksRef.once("value",snap=>{
-      const data=snap.val();
-      if(data){
-        const arr=Array.isArray(data)?data:Object.values(data);
-        parentTasks=arr.filter(p=>p&&p.id);
-        localStorage.setItem(PARENT_KEY,JSON.stringify(parentTasks));
-        renderParents();
-      }
-    }).catch(()=>{});
-  }catch(e){}
-}
 
 /* ================= 1. تنبيهات المهام المتأخرة ================= */
 let alertDismissed = false;
