@@ -763,16 +763,22 @@ function load(){
   catch(e){ return seed(); }
 }
 let _saveTimer;
+let _knownTaskIds=new Set(), _savePending=false;
 function save(){
   try{ localStorage.setItem(KEY, JSON.stringify(tasks)); }
   catch(e){ toast("⚠️ تعذّر الحفظ محلياً — صدّر نسخة احتياطية"); }
   // debounce Firebase writes (منع الكتابة المتكررة أثناء السحب)
   clearTimeout(_saveTimer);
+  _savePending = useFirebase;
   _saveTimer = setTimeout(()=>{
     if(!useFirebase) return;
+    // update() only touches task keys — never wipes workLogData/parentTasksData/configData
     const map = {};
     tasks.forEach(t=>{ if(t&&t.id) map[t.id]=t; });
-    tasksRef.set(map).catch(err=>{
+    _knownTaskIds.forEach(id=>{ if(!map[id]) map[id]=null; });
+    _knownTaskIds=new Set(Object.keys(map).filter(k=>map[k]!==null));
+    tasksRef.update(map).then(()=>{ _savePending=false; }).catch(err=>{
+      _savePending=false;
       console.warn("Firebase write failed:", err);
       toast("⚠️ تعذّرت المزامنة — بياناتك محفوظة محلياً");
     });
@@ -1549,13 +1555,17 @@ if(useFirebase){
       toast("☁️ تم رفع المهام للسحابة");
     } else {
       tasks = fbToArray(data);
+      _knownTaskIds = new Set(tasks.map(t=>t.id));
       localStorage.setItem(KEY, JSON.stringify(tasks));
       render();
     }
     firebaseReady = true;
     tasksRef.on("value", snap2=>{
+      // local edits are the source of truth until the pending write lands
+      if(_savePending) return;
       const d = snap2.val();
       tasks = d ? fbToArray(d) : [];
+      _knownTaskIds = new Set(tasks.map(t=>t.id));
       localStorage.setItem(KEY, JSON.stringify(tasks));
       debouncedRender();
     });
