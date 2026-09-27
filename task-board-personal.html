@@ -1459,9 +1459,15 @@ async function callOpenAI(base, key, model, sys, user){
 }
 
 /* ===== Firebase data helper ===== */
+const FB_RESERVED=new Set(["workLogData","parentTasksData","configData"]);
 function fbToArray(data){
+  if(!Array.isArray(data)){
+    const filtered={};
+    for(const k in data){ if(!FB_RESERVED.has(k)) filtered[k]=data[k]; }
+    data=filtered;
+  }
   const raw = Array.isArray(data) ? data : Object.values(data);
-  return raw.filter(t=>t&&typeof t==="object"&&t.id).map(t=>({
+  return raw.filter(t=>t&&typeof t==="object"&&t.id&&t.title).map(t=>({
     ...t,
     updates: Array.isArray(t.updates) ? t.updates.filter(u=>u&&u.id) :
              (t.updates && typeof t.updates==="object") ? Object.values(t.updates).filter(u=>u&&u.id) : []
