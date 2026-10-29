@@ -84,7 +84,7 @@
 
   /* ===== Linked subtask chain (parent card + children joined by a line) ===== */
   .card-chain{display:flex;flex-direction:column;align-items:stretch}
-  .grid-mode .card-chain{min-width:340px;max-width:370px;flex-shrink:0}
+  .grid-mode .card-chain,.sub-cards .card-chain{min-width:340px;max-width:370px;flex-shrink:0}
   .free-mode .card-chain{position:absolute;z-index:1;width:380px}
   .card-chain .card{position:static !important;width:auto}
   .card-chain .card:not(:first-child){margin-right:22px;border-right:3px solid var(--accent)}
@@ -1133,9 +1133,15 @@ function addLinkedSub(parentId){
   const title=(prompt("عنوان المهمة الفرعية لـ: "+p.title)||"").trim();
   if(!title) return;
   const maxNum=tasks.reduce((m,t)=>Math.max(m,t.num||0),0);
-  tasks.push({id:uid(),num:maxNum+1,title,desc:"",status:"new",priority:"normal",color:p.color||"",
-              deadline:"",assignee:p.assignee||"",parentTask:p.id,created:Date.now(),updates:[]});
-  save(); render(); toast("تمت إضافة الفرعية وربطها ✓");
+  const child={id:uid(),num:maxNum+1,title,desc:"",status:"new",priority:"normal",color:p.color||"",
+               deadline:"",assignee:p.assignee||"",parentTask:p.id,created:Date.now(),updates:[]};
+  tasks.push(child);
+  // save() first: it flags the pending write so the Firebase echo from saveParents() can't clobber local tasks
+  save();
+  // a child of a card that lives in a group stays in that same group
+  const grp=parentTasks.find(g=>(g.subtasks||[]).includes(p.id));
+  if(grp){ grp.subtasks.push(child.id); saveParents(); }
+  render(); if(grp) renderParents(); toast("تمت إضافة الفرعية وربطها ✓");
 }
 
 document.addEventListener("click",e=>{
@@ -1735,7 +1741,9 @@ function renderParents(){
     const pctColor=pct>=100?"var(--green)":pct>50?"var(--accent)":"var(--amber)";
 
     // Render linked subtask cards using the same card template
-    const subCardsHtml=linkedTasks.map(t=>{
+    const subCardHtml=t=>{
+      const kidCount=tasks.filter(c=>c&&c.parentTask===t.id).length;
+      const parentOf=t.parentTask?tasks.find(x=>x&&x.id===t.parentTask):null;
       const ups=[...(t.updates||[])].sort((a,b)=>b.at-a.at);
       const latestId=ups.length?ups[0].id:null;
       const shown=ups.slice(0,2);
@@ -1753,6 +1761,8 @@ function renderParents(){
           </div>
           <div class="badges">
             ${t.assignee?`<span class="badge">👤 ${esc(t.assignee)}</span>`:""}
+            ${kidCount?`<span class="badge chain-badge">⤵ ${kidCount} فرعية</span>`:""}
+            ${parentOf?`<span class="badge chain-badge">↳ فرعية من ${parentOf.num?'#'+parentOf.num:esc(parentOf.title)}</span>`:""}
             <span class="badge">📝 ${(t.updates||[]).length} تحديث</span>
             <span class="badge">🕐 ${rel(lastAt(t))}</span>
           </div>
@@ -1771,10 +1781,18 @@ function renderParents(){
             ${t.status!=="done"
               ?`<button class="btn sm" data-done="${t.id}">تمّت</button>`
               :`<button class="btn sm" data-reopen="${t.id}">إعادة فتح</button>`}
+            <button class="btn sm ghost" data-sub-of="${t.id}" title="إضافة مهمة فرعية مرتبطة بهذه البطاقة" style="opacity:.5">⤵</button>
             <button class="btn sm ghost" data-pdel-card="${p.id}|${t.id}" title="فك الربط" style="opacity:.4">✕</button>
           </div>
         </div>
       </div>`;
+    };
+    // chain children under their parent when both are in this group
+    const subIds=new Set(linkedTasks.map(t=>t.id));
+    const subCardsHtml=linkedTasks.filter(t=>!(t.parentTask&&subIds.has(t.parentTask))).map(t=>{
+      const kids=linkedTasks.filter(k=>k.parentTask===t.id).sort((a,b)=>(a.created||0)-(b.created||0));
+      if(!kids.length) return subCardHtml(t);
+      return `<div class="card-chain">${subCardHtml(t)}${kids.map(k=>`<div class="chain-link"></div>${subCardHtml(k)}`).join("")}</div>`;
     }).join("");
 
     return `${isArchived&&archivedGroups[0]===p?`<div class="archive-separator" onclick="document.getElementById('archivedParents').classList.toggle('collapsed')"><span>✅ مجلدات مكتملة (${archivedGroups.length})</span><span class="archive-arrow">▼</span></div><div id="archivedParents" class="collapsed">`:""}
