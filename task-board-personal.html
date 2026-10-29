@@ -804,9 +804,8 @@ function savePeopleFirebase(){
   });
 }
 function saveConfigFirebase(){
-  if(!useFirebase) return;
-  const c=cfg();
-  configRef.set(c).catch(err=>{ console.warn("Firebase config write failed:", err); });
+  if(!useFirebase||!configRef) return;
+  configRef.set(cfgCloud).catch(err=>{ console.warn("Firebase config write failed:", err); });
 }
 function seed(){
   const ts = new Date(2026,7,17,11,6,0).getTime();
@@ -1356,19 +1355,36 @@ $("#fileIn").onchange=e=>{
 };
 
 /* ================= ربط الـ AI ================= */
-let cfgData={};
-function cfg(){return cfgData;}
+// API keys never leave this device: Firebase /tasks is readable by anyone with the link
+const KEYS_KEY="taskBoard.aikeys";
+const isKeyField=k=>/_key$/.test(k);
+function loadKeys(){try{return JSON.parse(localStorage.getItem(KEYS_KEY)||"{}");}catch(e){return{};}}
+let cfgCloud={}, cfgKeys=loadKeys();
+function cfg(){return {...cfgCloud,...cfgKeys};}
 function setCfg(o){
-  cfgData=o;
-  if(useFirebase&&configRef) configRef.set(o).catch(()=>{});
+  cfgCloud={}; cfgKeys={};
+  for(const k in o){ (isKeyField(k)?cfgKeys:cfgCloud)[k]=o[k]; }
+  try{localStorage.setItem(KEYS_KEY,JSON.stringify(cfgKeys));}catch(e){}
+  if(useFirebase&&configRef) configRef.set(cfgCloud).catch(()=>{});
 }
-// migrate and load config from Firebase
+function applyCloudCfg(d){
+  const cloud={}, strip={}; let leaked=false;
+  for(const k in d){
+    if(isKeyField(k)){ leaked=true; strip[k]=null; if(!cfgKeys[k]) cfgKeys[k]=d[k]; }
+    else cloud[k]=d[k];
+  }
+  cfgCloud=cloud;
+  if(leaked){
+    try{localStorage.setItem(KEYS_KEY,JSON.stringify(cfgKeys));}catch(e){}
+    configRef.update(strip).catch(()=>{});
+  }
+}
 if(useFirebase&&configRef){
   configRef.once("value",snap=>{
     const d=snap.val();
-    if(d&&typeof d==="object"){cfgData=d;}
+    if(d&&typeof d==="object") applyCloudCfg(d);
     else{
-      try{const old=JSON.parse(localStorage.getItem(CFG)||"{}");if(Object.keys(old).length){cfgData=old;configRef.set(old).catch(()=>{});}}catch(e){}
+      try{const old=JSON.parse(localStorage.getItem(CFG)||"{}");if(Object.keys(old).length)setCfg(old);}catch(e){}
     }
     localStorage.removeItem(CFG);
   });
@@ -1631,7 +1647,7 @@ if(useFirebase){
 
   configRef.on("value", snap=>{
     const d=snap.val();
-    if(d&&typeof d==="object"){cfgData=d;}
+    if(d&&typeof d==="object") applyCloudCfg(d);
   });
 
   const connRef = db.ref(".info/connected");
