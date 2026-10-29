@@ -82,6 +82,16 @@
   .card.stale{}
   .card.done{opacity:.4; filter:grayscale(.4)}
 
+  /* ===== Linked subtask chain (parent card + children joined by a line) ===== */
+  .card-chain{display:flex;flex-direction:column;align-items:stretch}
+  .grid-mode .card-chain{min-width:340px;max-width:370px;flex-shrink:0}
+  .free-mode .card-chain{position:absolute;z-index:1;width:380px}
+  .card-chain .card{position:static !important;width:auto}
+  .card-chain .card:not(:first-child){margin-right:22px;border-right:3px solid var(--accent)}
+  .chain-link{height:26px;width:3px;background:var(--accent);margin:0 36px 0 auto;position:relative;opacity:.85}
+  .chain-link::after{content:"";position:absolute;bottom:-1px;right:-5px;width:12px;height:12px;border-radius:50%;background:var(--accent)}
+  .chain-badge{color:var(--accent);border-color:var(--accent);background:rgba(79,157,255,.08)}
+
   /* ===== Status ribbon (شريط الحالة الجانبي) ===== */
   .card::before{
     content:""; position:absolute; top:16px; right:-5px; width:10px; bottom:16px;
@@ -916,15 +926,17 @@ function render(){
     return;
   }
 
-  g.innerHTML=list.map(t=>{
+  const cardHtml=(t,inChain)=>{
     const ups=[...(t.updates||[])].sort((a,b)=>b.at-a.at);
+    const kidCount=tasks.filter(c=>c&&c.parentTask===t.id).length;
+    const parentOf=t.parentTask?tasks.find(p=>p&&p.id===t.parentTask):null;
     const latestId = ups.length ? ups[0].id : null;
     const showAll=expanded.has(t.id);
     const shown=showAll?ups:ups.slice(0,3);
     const hidden=ups.length-shown.length;
     const safeColor = t.color && /^#[0-9a-fA-F]{3,8}$/.test(t.color) ? t.color : "";
     const colorStyle = safeColor ? `border-top:4px solid ${safeColor};` : "";
-    const posStyle = freeMode && t.x!=null ? `left:${t.x}px;top:${t.y}px;` : "";
+    const posStyle = freeMode && !inChain && t.x!=null ? `left:${t.x}px;top:${t.y}px;` : "";
 
     const upsHtml = ups.length ? shown.map(u=>{
       const latest = u.id===latestId;
@@ -960,6 +972,8 @@ function render(){
         <div class="badges">
           ${t.assignee?`<span class="badge" style="color:#8cc8ff;background:rgba(79,157,255,.1)">👤 ${esc(t.assignee)}</span>`:""}
           ${t.priority==="high"?'<span class="badge p-high">🔥 أولوية عالية</span>':""}
+          ${kidCount?`<span class="badge chain-badge">⤵ ${kidCount} فرعية</span>`:""}
+          ${parentOf?`<span class="badge chain-badge">↳ فرعية من ${parentOf.num?'#'+parentOf.num:esc(parentOf.title)}</span>`:""}
           <span class="badge">📝 ${(t.updates||[]).length} تحديث</span>
           <span class="badge">🕐 ${rel(lastAt(t))}</span>
           ${t.status!=="done"?(()=>{
@@ -997,6 +1011,7 @@ function render(){
           ${t.status!=="done"
             ?`<button class="btn sm" data-done="${t.id}">تمّت</button>`
             :`<button class="btn sm" data-reopen="${t.id}">إعادة فتح</button>`}
+          <button class="btn sm ghost" data-sub-of="${t.id}" title="إضافة مهمة فرعية مرتبطة بهذه البطاقة" style="opacity:.5">⤵</button>
           <button class="btn sm ghost" data-to-parent="${t.id}" title="تحويل لمهمة رئيسية" style="opacity:.5">📁</button>
           <button class="btn sm ghost" data-to-sub="${t.id}" title="إضافة لمهمة رئيسية" style="opacity:.5">🔗</button>
           <span class="spacer"></span>
@@ -1004,6 +1019,16 @@ function render(){
         </div>
       </div>
     </div>`;
+  };
+
+  // children render in a chain under their parent; a child whose parent is filtered out stands alone
+  const listIds=new Set(list.map(t=>t.id));
+  const top=list.filter(t=>!(t.parentTask&&listIds.has(t.parentTask)));
+  g.innerHTML=top.map(t=>{
+    const kids=list.filter(k=>k.parentTask===t.id).sort((a,b)=>(a.created||0)-(b.created||0));
+    if(!kids.length) return cardHtml(t,false);
+    const pos=freeMode&&t.x!=null?`left:${t.x}px;top:${t.y}px;`:"";
+    return `<div class="card-chain" style="${pos}">${cardHtml(t,true)}${kids.map(k=>`<div class="chain-link"></div>${cardHtml(k,true)}`).join("")}</div>`;
   }).join("");
 
   // update canvas height for free mode
@@ -1053,13 +1078,15 @@ document.addEventListener("pointerdown", e=>{
   if(!head) return;
   if(e.target.closest("button")) return; // don't drag from buttons
   const card = head.closest(".card");
-  const tid = head.dataset.drag;
+  // a chained card drags the whole chain; position belongs to the chain's parent task
+  const chain = card.closest(".card-chain");
+  const tid = chain ? chain.querySelector(".card").dataset.id : head.dataset.drag;
   const t = tasks.find(x=>x.id===tid);
   if(!t) return;
   e.preventDefault();
-  card.classList.add("dragging");
+  (chain||card).classList.add("dragging");
   card.setPointerCapture(e.pointerId);
-  dragState = { tid, startX:e.clientX, startY:e.clientY, origX:t.x||0, origY:t.y||0, card, moved:false };
+  dragState = { tid, startX:e.clientX, startY:e.clientY, origX:t.x||0, origY:t.y||0, card:(chain||card), moved:false };
 });
 
 document.addEventListener("pointermove", e=>{
@@ -1101,6 +1128,16 @@ function addUpdate(id){
   save();render();toast("تم حفظ التحديث ✓");
 }
 
+function addLinkedSub(parentId){
+  const p=tasks.find(t=>t.id===parentId); if(!p) return;
+  const title=(prompt("عنوان المهمة الفرعية لـ: "+p.title)||"").trim();
+  if(!title) return;
+  const maxNum=tasks.reduce((m,t)=>Math.max(m,t.num||0),0);
+  tasks.push({id:uid(),num:maxNum+1,title,desc:"",status:"new",priority:"normal",color:p.color||"",
+              deadline:"",assignee:p.assignee||"",parentTask:p.id,created:Date.now(),updates:[]});
+  save(); render(); toast("تمت إضافة الفرعية وربطها ✓");
+}
+
 document.addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   const d=b.dataset;
@@ -1109,6 +1146,7 @@ document.addEventListener("click",e=>{
   if(d.edit)return openTask(d.edit);
   if(d.done){tasks.find(t=>t.id===d.done).status="done";save();render();return toast("اكتملت المهمة ✓");}
   if(d.reopen){tasks.find(t=>t.id===d.reopen).status="doing";save();render();return;}
+  if(d.subOf) return addLinkedSub(d.subOf);
   if(d.toParent) return convertToParent(d.toParent);
   if(d.toSub) return addToParent(d.toSub);
   if(d.delU){
