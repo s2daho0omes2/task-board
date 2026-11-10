@@ -92,6 +92,12 @@
   .chain-link::after{content:"";position:absolute;bottom:-1px;right:-5px;width:12px;height:12px;border-radius:50%;background:var(--accent)}
   .chain-badge{color:var(--accent);border-color:var(--accent);background:rgba(79,157,255,.08)}
 
+  /* ===== Today's tasks ===== */
+  .card.is-today-task{box-shadow:0 0 0 2px var(--amber),0 8px 32px rgba(0,0,0,.4)}
+  .today-badge{color:var(--amber);background:rgba(210,153,34,.14);border-color:var(--amber)}
+  .btn.today-on{background:rgba(210,153,34,.22);border-color:var(--amber)}
+  .tab-today.active{background:var(--amber);border-color:var(--amber);color:#111}
+
   /* ===== Status ribbon (شريط الحالة الجانبي) ===== */
   .card::before{
     content:""; position:absolute; top:16px; right:-5px; width:10px; bottom:16px;
@@ -460,6 +466,7 @@
   <div class="search"><input id="q" placeholder="ابحث في العناوين والتحديثات..."></div>
   <div class="tabs" id="tabs">
     <button class="tab active" data-f="all">الكل</button>
+    <button class="tab tab-today" data-f="today">☀️ مهام اليوم <span id="todayTabCount"></span></button>
     <button class="tab" data-f="new">جديدة</button>
     <button class="tab" data-f="doing">قيد التنفيذ</button>
     <button class="tab" data-f="wait">معلّقة</button>
@@ -896,11 +903,13 @@ function visible(){
   const linkedIds=getLinkedTaskIds();
   return tasks.filter(t=>t&&t.id).filter(t=>{
     // Hide tasks linked to a parent (they show under the parent)
-    if(linkedIds.has(t.id)&&filter!=="stale") return false;
+    // "today" lists every task flagged today, wherever it lives and even once completed
+    if(linkedIds.has(t.id)&&filter!=="stale"&&filter!=="today") return false;
     // المكتملة تروح للأرشيف إلا إذا المستخدم اختار فلتر "مكتملة"
-    if(t.status==="done"&&filter!=="done") return false;
+    if(t.status==="done"&&filter!=="done"&&filter!=="today") return false;
     if(filterAssignee && (t.assignee||"")!==filterAssignee) return false;
     if(filter==="stale"){ if(!isStale(t))return false; }
+    else if(filter==="today"){ if(!isToday(t.todayAt))return false; }
     else if(filter!=="all"&&filter!=="done"&&t.status!==filter)return false;
     if(!q)return true;
     return(t.title+" "+(t.desc||"")+" "+(t.updates||[]).map(u=>u.text).join(" ")).toLowerCase().includes(q);
@@ -919,6 +928,16 @@ function render(){
   const todayCount=tasks.reduce((n,t)=>n+(t&&t.updates?t.updates.filter(u=>isToday(u.at)).length:0),0);
   $("#stats").textContent=`${tasks.length} مهمة · ${open} مفتوحة · ${todayCount} تحديث اليوم`;
 
+  const tc=tasks.filter(t=>t&&isToday(t.todayAt));
+  const tcOpen=tc.filter(t=>t.status!=="done").length;
+  $("#todayTabCount").textContent=tc.length?`(${tc.length-tcOpen}/${tc.length})`:"";
+  // the today list stands alone: folders would bury it
+  $("#parentTasksArea").style.display = filter==="today" ? "none" : "";
+
+  if(!list.length&&filter==="today"){
+    g.innerHTML=`<div class="empty" style="grid-column:1/-1;position:static">لم تحدد مهام لليوم بعد.<br>اضغط ☀️ على أي بطاقة لتضيفها هنا.</div>`;
+    return;
+  }
   if(!list.length){
     g.innerHTML=`<div class="empty" style="grid-column:1/-1;position:static">لا توجد مهام مطابقة.<br><br>
       <button class="btn primary" onclick="document.getElementById('btnNew').click()">أضف مهمة</button></div>`;
@@ -957,7 +976,7 @@ function render(){
     const statusEmoji = {new:'🆕',doing:'⚡',wait:'⏸️',done:'✅'};
 
     return `
-    <div class="card ${t.status==="done"?"done":""} ${isStale(t)?"stale":""}" data-id="${t.id}" style="${posStyle}${safeColor?'--card-color:'+safeColor+';':''}">
+    <div class="card ${t.status==="done"?"done":""} ${isStale(t)?"stale":""} ${isToday(t.todayAt)?"is-today-task":""}" data-id="${t.id}" style="${posStyle}${safeColor?'--card-color:'+safeColor+';':''}">
       <div class="card-status-bar ${statusBarCls[t.status]||'s-new-bar'}" data-drag="${t.id}">
         <span>${statusEmoji[t.status]||''} ${STATUS[t.status]}</span>
         <span style="opacity:.5">${t.num?'#'+t.num:''}</span>
@@ -971,6 +990,7 @@ function render(){
         <div class="badges">
           ${t.assignee?`<span class="badge" style="color:#8cc8ff;background:rgba(79,157,255,.1)">👤 ${esc(t.assignee)}</span>`:""}
           ${t.priority==="high"?'<span class="badge p-high">🔥 أولوية عالية</span>':""}
+          ${isToday(t.todayAt)?'<span class="badge today-badge">☀️ مهمة اليوم</span>':""}
           ${kidCount?`<span class="badge chain-badge">⤵ ${kidCount} فرعية</span>`:""}
           ${parentOf?`<span class="badge chain-badge">↳ فرعية من ${parentOf.num?'#'+parentOf.num:esc(parentOf.title)}</span>`:""}
           <span class="badge">📝 ${(t.updates||[]).length} تحديث</span>
@@ -1010,7 +1030,7 @@ function render(){
           ${t.status!=="done"
             ?`<button class="btn sm" data-done="${t.id}">تمّت</button>`
             :`<button class="btn sm" data-reopen="${t.id}">إعادة فتح</button>`}
-          <button class="btn sm ghost" data-sub-of="${t.id}" title="إضافة مهمة فرعية مرتبطة بهذه البطاقة" style="opacity:.5">⤵</button>
+          <button class="btn sm ${isToday(t.todayAt)?"today-on":"ghost"}" data-today="${t.id}" title="${isToday(t.todayAt)?"إزالة من مهام اليوم":"اجعلها مهمة اليوم"}">☀️</button><button class="btn sm ghost" data-sub-of="${t.id}" title="إضافة مهمة فرعية مرتبطة بهذه البطاقة" style="opacity:.5">⤵</button>
           <button class="btn sm ghost" data-to-parent="${t.id}" title="تحويل لمهمة رئيسية" style="opacity:.5">📁</button>
           <button class="btn sm ghost" data-to-sub="${t.id}" title="إضافة لمهمة رئيسية" style="opacity:.5">🔗</button>
           <span class="spacer"></span>
@@ -1151,6 +1171,13 @@ document.addEventListener("click",e=>{
   if(d.edit)return openTask(d.edit);
   if(d.done){tasks.find(t=>t.id===d.done).status="done";save();render();return toast("اكتملت المهمة ✓");}
   if(d.reopen){tasks.find(t=>t.id===d.reopen).status="doing";save();render();return;}
+  if(d.today){
+    const t=tasks.find(x=>x.id===d.today); if(!t) return;
+    const on=!isToday(t.todayAt);
+    if(on) t.todayAt=Date.now(); else delete t.todayAt;
+    save(); render();
+    return toast(on?"أضيفت لمهام اليوم ☀️":"أزيلت من مهام اليوم");
+  }
   if(d.subOf) return addLinkedSub(d.subOf);
   if(d.toParent) return convertToParent(d.toParent);
   if(d.toSub) return addToParent(d.toSub);
@@ -1765,7 +1792,7 @@ function renderParents(){
       const shown=ups.slice(0,2);
       const statusBarCls={new:'s-new-bar',doing:'s-doing-bar',wait:'s-wait-bar',done:'s-done-bar'};
       const statusEmoji={new:'🆕',doing:'⚡',wait:'⏸️',done:'✅'};
-      return `<div class="card ${t.status==="done"?"done":""} ${isStale(t)?"stale":""}" data-id="${t.id}" draggable="true" data-drag-sub="${t.id}" data-drag-from="${p.id}">
+      return `<div class="card ${t.status==="done"?"done":""} ${isStale(t)?"stale":""} ${isToday(t.todayAt)?"is-today-task":""}" data-id="${t.id}" draggable="true" data-drag-sub="${t.id}" data-drag-from="${p.id}">
         <div class="card-status-bar ${statusBarCls[t.status]||'s-new-bar'}">
           <span>${statusEmoji[t.status]||''} ${STATUS[t.status]}</span>
           <span style="opacity:.5">${t.num?'#'+t.num:''}</span>
@@ -1777,7 +1804,8 @@ function renderParents(){
           </div>
           <div class="badges">
             ${t.assignee?`<span class="badge">👤 ${esc(t.assignee)}</span>`:""}
-            ${kidCount?`<span class="badge chain-badge">⤵ ${kidCount} فرعية</span>`:""}
+            ${isToday(t.todayAt)?'<span class="badge today-badge">☀️ مهمة اليوم</span>':""}
+          ${kidCount?`<span class="badge chain-badge">⤵ ${kidCount} فرعية</span>`:""}
             ${parentOf?`<span class="badge chain-badge">↳ فرعية من ${parentOf.num?'#'+parentOf.num:esc(parentOf.title)}</span>`:""}
             <span class="badge">📝 ${(t.updates||[]).length} تحديث</span>
             <span class="badge">🕐 ${rel(lastAt(t))}</span>
@@ -1797,7 +1825,7 @@ function renderParents(){
             ${t.status!=="done"
               ?`<button class="btn sm" data-done="${t.id}">تمّت</button>`
               :`<button class="btn sm" data-reopen="${t.id}">إعادة فتح</button>`}
-            <button class="btn sm ghost" data-sub-of="${t.id}" title="إضافة مهمة فرعية مرتبطة بهذه البطاقة" style="opacity:.5">⤵</button>
+            <button class="btn sm ${isToday(t.todayAt)?"today-on":"ghost"}" data-today="${t.id}" title="${isToday(t.todayAt)?"إزالة من مهام اليوم":"اجعلها مهمة اليوم"}">☀️</button><button class="btn sm ghost" data-sub-of="${t.id}" title="إضافة مهمة فرعية مرتبطة بهذه البطاقة" style="opacity:.5">⤵</button>
             <button class="btn sm ghost" data-pdel-card="${p.id}|${t.id}" title="فك الربط" style="opacity:.4">✕</button>
           </div>
         </div>
